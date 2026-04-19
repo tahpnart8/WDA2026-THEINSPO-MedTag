@@ -28,15 +28,22 @@ Với thời gian 2 ngày, nhóm áp dụng chiến lược **Chạy tiếp sứ
 - **Deploy lần 1:** Deploy bộ khung trắng lên Vercel và Render để test luồng CI/CD.
 
 ### Giai đoạn 2: Cổng Cấp Cứu "Thời Gian Vàng" (Giờ 10 - 22)
-*Mục tiêu: Hoàn thiện màn hình Public khi người đi đường quét mã QR.*
-- **UI Quét QR (PWA):** Giao diện tập trung tối đa: Avatar to, Nhóm máu (Khối Đen), Dị ứng (Khối Đỏ), Bệnh nền nguy hiểm.
-- **Nút Cấp Cứu (SOS) & Thuật toán trễ:**
-  - Code vòng tròn đếm ngược 15s (Intervention Trigger).
-  - Nút Hủy khẩn cấp.
-- **Bắt tọa độ GPS:** Tích hợp HTML5 Geolocation. Code xử lý Edge case: Người dùng từ chối cấp quyền hoặc điện thoại mất sóng GPS.
-- **Offline Fallback:** 
-  - Cấu hình Service Worker cho PWA để cache giao diện tĩnh.
-  - Tích hợp SMS Gateway: Trả về link Google Maps qua tin nhắn nếu không có Internet.
+*Mục tiêu: Hoàn thiện màn hình Public khi người đi đường quét mã QR, bám sát các tiêu chí UX/UI và Bảo mật của hồ sơ thi WDA2026.*
+- **Định tuyến QR Động & Dự phòng Mã Ngắn (Dynamic Router & Short ID):**
+  - Xây dựng luồng truy cập khẩn cấp tại `app/e/[shortId]/page.tsx`.
+  - Trang chủ (`/`) là ô nhập Mã ID Ngắn (Ví dụ: X7K9A2) dự phòng cho trường hợp thẻ QR vật lý bị trầy xước (Dung sai Level H 30%).
+- **Cổng Rào chắn Truy cập Trái phép (Anti-Spam Target Gate):**
+  - Yêu cầu người quét mã thực hiện thao tác UX vi mô (Micro-interactions) như "Vuốt/Nhấn giữ để mở khóa" nhằm phân biệt người thật và Crawling Bots, ngăn chặn cào dữ liệu hồ sơ.
+- **Tối ưu Tải lượng Nhận thức (Cognitive Load Trimming):**
+  - Giao diện gọt bỏ 100% text kỹ thuật rườm rà.
+  - **Visual Double Check (Sinh trắc thị giác):** Avatar người bệnh to, rõ ràng để người đi đường đối chiếu khuôn mặt, loại bỏ rủi ro cấp cứu sai người (đeo nhầm thẻ/mượn đồ).
+  - Thiết kế 3 khối màu khổng lồ dễ đọc nhất: **GREEN BOX** (Thông tin cá nhân & Liên hệ), **RED BOX** (Dị ứng), **BLACK BOX** (Nhóm máu).
+- **Nút Cấp Cứu (SOS) & Intervention Trigger:**
+  - Code vòng tròn đếm ngược 15s. Kích hoạt Push Notification/SMS cảnh báo về điện thoại chủ tài khoản (nạn nhân) để họ có 15s tự vệ hủy lệnh nếu bị quét lén.
+  - Sau 15s (bỏ qua/hôn mê thật), tự động kích hoạt SOS Audit Logging gửi tọa độ GPS HTML5 (Geolocation) về gia đình.
+- **Offline Fallback (Progressive Skeleton UI):** 
+  - Cài đặt PWA (`next-pwa`) và Service Worker.
+  - Xử lý rủi ro rớt sóng 3G (Điểm mù): Đóng băng màn hình, render giao diện Skeleton Xám (lấy từ Cache) thay vì hiện trang báo lỗi mất mạng của trình duyệt. Tích hợp SMS Gateway dự phòng.
 
 ### Giai đoạn 3: Web Portal Quản Trị & Y Tế Đặc Quyền (Giờ 22 - 36)
 *Mục tiêu: Cho phép người bệnh cập nhật thông tin và Bác sĩ truy cập dữ liệu mật.*

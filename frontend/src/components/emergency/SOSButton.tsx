@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '../ui/Button';
 
-export function SOSButton({ patientId }: { patientId: string }) {
+export function SOSButton({ qrCode }: { qrCode: string }) {
   const [status, setStatus] = useState<'IDLE' | 'COUNTING' | 'TRIGGERED'>('IDLE');
   const [countdown, setCountdown] = useState(15);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -32,20 +32,32 @@ export function SOSButton({ patientId }: { patientId: string }) {
   const triggerEmergency = () => {
     setStatus('TRIGGERED');
     
-    // Yêu cầu lấy tọa độ GPS của người đi đường (người quét mã)
+    const sendSOSRequest = async (lat?: number, lng?: number) => {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/emergency/${qrCode}/sos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ latitude: lat, longitude: lng }),
+        });
+      } catch (error) {
+        console.error('Lỗi khi gửi SOS API:', error);
+      }
+    };
+
+    // Yêu cầu lấy tọa độ GPS
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log(`[MedTag] Emergency Triggered! Lat: ${latitude}, Lng: ${longitude}`);
-          // TODO: Gọi API Backend để lưu EmergencyLog và gửi SMS/Notification
+          sendSOSRequest(position.coords.latitude, position.coords.longitude);
         },
         (error) => {
-          console.warn('[MedTag] GPS Error / User Denied:', error.message);
-          // Fallback nếu không có GPS
+          console.warn('[MedTag] GPS Error:', error.message);
+          sendSOSRequest(); // Fallback gửi không có tọa độ
         },
         { enableHighAccuracy: true, timeout: 5000 }
       );
+    } else {
+      sendSOSRequest();
     }
   };
 
@@ -109,3 +121,4 @@ export function SOSButton({ patientId }: { patientId: string }) {
     </Button>
   );
 }
+
