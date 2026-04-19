@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Role {
+  GUARDIAN
+  DOCTOR
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum BloodType {
+  A_POSITIVE    // A+
+  A_NEGATIVE    // A-
+  B_POSITIVE    // B+
+  B_NEGATIVE    // B-
+  O_POSITIVE    // O+
+  O_NEGATIVE    // O-
+  AB_POSITIVE   // AB+
+  AB_NEGATIVE   // AB-
+  UNKNOWN
+}
+
+enum DataFreshnessStatus {
+  FRESH       // Đã xác nhận < 6 tháng
+  STALE       // 6-12 tháng chưa xác nhận
+  EXPIRED     // > 12 tháng chưa xác nhận
+}
+
+enum EmergencyStatus {
+  TRIGGERED   // Đã kích hoạt
+  CANCELLED   // Bệnh nhân/Bystander hủy
+  RESOLVED    // Đã xử lý xong
+}
+
+enum SmsDeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  VIEW_PUBLIC_RECORD
+  VIEW_MEDICAL_RECORD
+  CREATE_RECORD
+  UPDATE_RECORD
+  DELETE_RECORD
+  LINK_DEVICE
+  UNLINK_DEVICE
+  TRIGGER_SOS
+  CANCEL_SOS
+  CONFIRM_DATA_FRESHNESS
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+/// Người dùng hệ thống (Giám hộ, Bác sĩ, Admin)
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String   // bcrypt hash
+  role          Role     @default(GUARDIAN)
+  fullName      String
+  phoneNumber   String?
+  avatarUrl     String?
+  isActive      Boolean  @default(true)
+
+  // Quan hệ
+  medicalRecords MedicalRecord[]
+  auditLogs      AuditLog[]
+  resolvedLogs   EmergencyLog[]  @relation("ResolvedBy")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+/// Hồ sơ y tế bệnh nhân - Lõi của hệ thống
+model MedicalRecord {
+  id                    String   @id @default(uuid())
+  
+  // --- Thông tin cá nhân (Public Layer) ---
+  patientName           String
+  dateOfBirth           DateTime?
+  gender                Gender?
+  avatarUrl             String?  // Ảnh chân dung cho Visual Double Check
+  
+  // --- Dữ liệu cấp cứu công khai (Public Layer - Plaintext) ---
+  bloodType             BloodType @default(UNKNOWN)
+  allergies             Json?     // ["Penicillin", "Đậu phộng", "Latex"]
+  dangerousConditions   Json?     // ["Nhồi máu cơ tim", "Tiểu đường Type 2"]
+  emergencyPhone        String?   // Số điện thoại khẩn cấp hiển thị công khai
+  emergencyContactName  String?   // Tên người liên hệ khẩn cấp
+  
+  // --- Dữ liệu y tế nhạy cảm (Encrypted Layer - AES-256) ---
+  // Lưu trữ JSON string đã mã hóa chứa toàn bộ bệnh án chi tiết
+  // Cấu trúc JSON gốc trước mã hóa: xem phần 4 bên dưới
+  encryptedMedicalData  String?   // iv:ciphertext (AES-256-CBC)
+  
+  // --- Metadata quản trị ---
+  dataFreshnessStatus   DataFreshnessStatus @default(FRESH)
+  dataConfirmedAt       DateTime  @default(now()) // Lần cuối Guardian xác nhận
+  notes                 String?   // Ghi chú nội bộ
+
+  // Quan hệ
+  guardianId            String
+  guardian              User      @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  devices               Device[]
+  emergencyLogs         EmergencyLog[]
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([guardianId])
+  @@index([dataFreshnessStatus])
+}
+
+/// Thiết bị vật lý (vòng tay, thẻ, mặt dây chuyền)
+model Device {
+  id              String   @id @default(uuid())
+  qrCode          String   @unique  // Mã QR đầy đủ (có thể là URL)
+  shortId         String   @unique  // Mã ID ngắn 6 ký tự (VD: X7K9A2)
+  label           String?  // Nhãn hiển thị: "Vòng tay Ông", "Thẻ Bà"
+  isActive        Boolean  @default(true)
+
+  // Quan hệ
+  medicalRecordId String
+  medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+  emergencyLogs   EmergencyLog[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([shortId])
+  @@index([medicalRecordId])
+}
+
+/// Nhật ký sự kiện cấp cứu
+model EmergencyLog {
+  id              String           @id @default(uuid())
+  latitude        Float?
+  longitude       Float?
+  status          EmergencyStatus  @default(TRIGGERED)
+
+  // Thông tin Bystander (ẩn danh)
+  bystanderIp     String?
+  bystanderUA     String?          // User-Agent trình duyệt
+
+  // SMS Tracking
+  smsStatus       SmsDeliveryStatus @default(PENDING)
+  smsMessageSid   String?          // Twilio Message SID
+
+  // Ghi chú xử lý
+  notes           String?
+
+  // Quan hệ
+  medicalRecordId String
+  medicalRecord   MedicalRecord    @relation(fields: [medicalRecordId], references: [id])
+  deviceId        String?
+  device          Device?          @relation(fields: [deviceId], references: [id])
+  resolvedById    String?
+  resolvedBy      User?            @relation("ResolvedBy", fields: [resolvedById], references: [id])
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([medicalRecordId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+/// Nhật ký kiểm toán bảo mật
+model AuditLog {
+  id          String      @id @default(uuid())
+  action      AuditAction
+  targetType  String      // "MedicalRecord", "Device", "EmergencyLog"
+  targetId    String?     // ID của đối tượng bị tác động
+  
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id])
+  
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?       // Dữ liệu bổ sung dạng JSON
+
+  createdAt   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
