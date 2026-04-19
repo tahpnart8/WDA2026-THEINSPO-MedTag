@@ -127,7 +127,7 @@ export class MedicalService {
 **File:** `backend/src/medical/medical.controller.ts`
 
 ```typescript
-@Controller('api/medical')
+@Controller('medical')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.DOCTOR)
 export class MedicalController {
@@ -155,16 +155,14 @@ export class MedicalController {
 }
 ```
 
-**Kiểm tra:**
-```bash
+**Kiểm tra (PowerShell):**
+```powershell
 # Login as doctor
-TOKEN=$(curl -s -X POST http://localhost:3001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"bacsi@medtag.vn","password":"123456"}' | jq -r '.token')
+$loginResp = Invoke-RestMethod -Uri http://localhost:3001/api/auth/login -Method Post -ContentType "application/json" -Body '{"email":"bacsi@medtag.vn","password":"123456"}'
+$token = $loginResp.access_token
 
 # Get decrypted record
-curl http://localhost:3001/api/medical/X7K9A2 \
-  -H "Authorization: Bearer $TOKEN"
+Invoke-RestMethod -Uri http://localhost:3001/api/medical/X7K9A2 -Headers @{Authorization="Bearer $token"}
 
 # Verify: response phải chứa decryptedMedicalData với JSON bệnh án đã giải mã
 # Verify: AuditLog phải có bản ghi mới

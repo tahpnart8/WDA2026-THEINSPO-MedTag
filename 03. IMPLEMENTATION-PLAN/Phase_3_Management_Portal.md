@@ -128,7 +128,7 @@ async updateAvatar(userId: string, recordId: string, avatarUrl: string): Promise
 **File:** `backend/src/portal/portal.controller.ts`
 
 ```typescript
-@Controller('api/portal')
+@Controller('portal')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.GUARDIAN)
 export class PortalController {
@@ -173,21 +173,17 @@ export class PortalController {
 }
 ```
 
-**Kiểm tra:**
-```bash
+**Kiểm tra (PowerShell):**
+```powershell
 # Login trước
-TOKEN=$(curl -s -X POST http://localhost:3001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"nguoithan@medtag.vn","password":"123456"}' | jq -r '.token')
+$loginResp = Invoke-RestMethod -Uri http://localhost:3001/api/auth/login -Method Post -ContentType "application/json" -Body '{"email":"nguoithan@medtag.vn","password":"123456"}'
+$token = $loginResp.access_token
 
 # Get records
-curl http://localhost:3001/api/portal/medical-records -H "Authorization: Bearer $TOKEN"
+Invoke-RestMethod -Uri http://localhost:3001/api/portal/medical-records -Headers @{Authorization="Bearer $token"}
 
 # Create record
-curl -X POST http://localhost:3001/api/portal/medical-records \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"patientName":"Test Patient","bloodType":"A_POSITIVE","allergies":["Aspirin"]}'
+Invoke-RestMethod -Uri http://localhost:3001/api/portal/medical-records -Method Post -ContentType "application/json" -Headers @{Authorization="Bearer $token"} -Body '{"patientName":"Test Patient","bloodType":"A_POSITIVE","allergies":["Aspirin"]}'
 ```
 
 **Commit:** `feat: PortalController with all CRUD routes + auth guards`
