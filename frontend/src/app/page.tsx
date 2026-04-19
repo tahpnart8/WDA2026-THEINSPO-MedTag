@@ -1,65 +1,61 @@
-import Image from "next/image";
+import { Card } from '@/components/ui/Card';
+import { SOSButton } from '@/components/emergency/SOSButton';
 
-export default function Home() {
+export default function EmergencyPortal() {
+  // Mock data mô phỏng thông tin lấy được từ mã QR
+  const patient = {
+    id: 'mock-123',
+    name: 'Nguyễn Văn A',
+    bloodType: 'O+',
+    allergies: 'Penicillin, Đậu phộng',
+    dangerousConditions: 'Tiền sử nhồi máu cơ tim, Huyết áp cao thường xuyên',
+    avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=e2e8f0'
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="max-w-md mx-auto p-5 min-h-screen bg-gray-50 flex flex-col pb-24">
+      {/* Header Profile - Avatar to */}
+      <div className="flex flex-col items-center mt-6 mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-xl mb-4 bg-white">
+          <img src={patient.avatar} alt={patient.name} className="w-full h-full object-cover" />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <h1 className="text-4xl font-black text-gray-900 mb-1 tracking-tight">{patient.name}</h1>
+        <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full mt-2">
+          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+          <span className="text-sm font-bold uppercase tracking-wider">Hồ sơ cấp cứu</span>
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Thông tin sinh tồn (Vital Info) */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <Card variant="black" className="flex flex-col items-center justify-center p-6 text-center shadow-lg">
+          <span className="text-sm uppercase tracking-widest opacity-70 mb-2 font-semibold">Nhóm máu</span>
+          <span className="text-5xl font-black text-red-500 drop-shadow-md">{patient.bloodType}</span>
+        </Card>
+        
+        <Card variant="danger" className="flex flex-col items-center justify-center p-6 text-center shadow-lg">
+          <span className="text-sm uppercase tracking-widest opacity-70 mb-2 font-semibold text-red-800">Dị ứng</span>
+          <span className="text-xl font-bold leading-tight text-red-950">{patient.allergies}</span>
+        </Card>
+      </div>
+
+      {/* Bệnh nền nguy hiểm */}
+      <Card variant="warning" className="p-6 mb-10 shadow-lg border-2 border-yellow-300">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-2xl">⚠️</span>
+          <h3 className="text-sm uppercase tracking-widest opacity-80 font-black text-yellow-900">Bệnh nền nguy hiểm</h3>
+        </div>
+        <p className="text-2xl font-bold text-yellow-950 leading-snug">{patient.dangerousConditions}</p>
+      </Card>
+
+      {/* Khu vực nút Cấp Cứu (Nổi bật nhất) */}
+      <div className="mt-auto">
+        <SOSButton patientId={patient.id} />
+      </div>
+
+      <p className="text-center text-xs text-gray-400 mt-8 font-medium">
+        Hệ thống MedTag &copy; 2026<br/>Dữ liệu được bảo mật chuẩn y tế
+      </p>
+    </main>
   );
 }
