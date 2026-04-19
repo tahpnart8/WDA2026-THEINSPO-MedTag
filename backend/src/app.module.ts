@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { CryptoModule } from './crypto/crypto.module';
 import { AuthModule } from './auth/auth.module';
+import { EmergencyModule } from './emergency/emergency.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -14,6 +15,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     PrismaModule,
     CryptoModule,
     AuthModule,
+    EmergencyModule,
   ],
   controllers: [AppController],
   providers: [
