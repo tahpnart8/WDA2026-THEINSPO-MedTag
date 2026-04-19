@@ -9,8 +9,8 @@
 
 | Phase | Tên | Mục tiêu | File chi tiết | Dependencies |
 |---|---|---|---|---|
-| **0** | Infrastructure & Bootstrap | Khởi tạo repo, cài đặt dependencies, cấu hình CI/CD, biến môi trường | `Phase_0_Infrastructure.md` | Không |
-| **1** | Database & Core Backend | Prisma Schema, Migrations, PrismaService (singleton), CryptoService, AuthService | `Phase_1_Database_And_Core.md` | Phase 0 |
+| **0** | Infrastructure (Fresh Init) | Tạo mới NestJS + Next.js từ đầu, cài deps, cấu hình env | `Phase_0_Infrastructure.md` | Không |
+| **1** | Database & Core Backend | Prisma Schema, PrismaService, CryptoModule, AuthModule | `Phase_1_Database_And_Core.md` | Phase 0 |
 | **2** | Emergency Public Gateway | API GET/POST emergency, Frontend Luồng 1 (QR → AntiSpam → Info → SOS), Redis Cache | `Phase_2_Emergency_Gateway.md` | Phase 1 |
 | **3** | Management Portal | Auth Guardian (Login/Register), CRUD Hồ sơ, Device Link, Dashboard Guardian | `Phase_3_Management_Portal.md` | Phase 1 |
 | **4** | Secure Medical Vault | Auth Doctor (Mock SSO), API giải mã AES-256, Dashboard Bác sĩ, AuditLog | `Phase_4_Medical_Vault.md` | Phase 1, Phase 2 |

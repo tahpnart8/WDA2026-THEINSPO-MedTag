@@ -1,169 +1,122 @@
-# Phase 0: Infrastructure & Project Bootstrap
+# Phase 0: Infrastructure – Khởi Tạo Dự Án Từ Đầu
 
-> **Mục tiêu:** Dựng xong bộ khung dự án, cài đặt toàn bộ dependencies, cấu hình biến môi trường, đảm bảo cả FE+BE chạy được trên local.
+> **Mục tiêu:** Tạo mới hoàn toàn backend (NestJS) và frontend (Next.js) từ đầu,
+> cài đặt toàn bộ dependencies, cấu hình biến môi trường. Kết thúc Phase 0
+> khi cả 2 projects đều chạy được trên local.
 
 ---
 
 ## Pre-conditions
 - Node.js >= 18 đã cài đặt
 - Git đã cài đặt + repo đã clone
-- Tài khoản Supabase (PostgreSQL), Upstash (Redis) đã tạo
-- Tài khoản Vercel + Render.com (hoặc tương đương)
+- Các folder cũ `backend/` và `frontend/` đã xóa
+- Tài khoản Supabase đã có sẵn (DB URL đã có)
 
 ---
 
-## Task 0.1: Kiểm tra & cập nhật cấu trúc Monorepo
+## Task 0.1: Khởi tạo NestJS Backend
 
-**Trạng thái hiện tại:** Repo đã có `/frontend` (Next.js) và `/backend` (NestJS) ở root.
-
-**Hành động:**
 ```bash
-# Kiểm tra cấu trúc hiện tại
-ls -la
-ls frontend/package.json
-ls backend/package.json
+cd WDA2026-THEINSPO-MedTag
+npx -y @nestjs/cli new backend --package-manager npm --skip-git --strict
 ```
 
-**Kết quả mong đợi:** Cả hai thư mục có `package.json` hợp lệ.
+**Lưu ý:** Flag `--skip-git` vì monorepo đã có `.git` ở root.
 
-**Commit:** `chore: verify monorepo structure`
+**Kết quả:** Folder `backend/` được tạo mới với NestJS boilerplate.
+
+**Commit:** `chore: initialize fresh NestJS backend`
 
 ---
 
-## Task 0.2: Cài đặt / Cập nhật Dependencies cho Backend
+## Task 0.2: Cài đặt Backend Dependencies
 
-**File cần sửa:** `backend/package.json`
-
-**Dependencies cần có:**
 ```bash
 cd backend
 
-# Core NestJS
-npm install @nestjs/common @nestjs/core @nestjs/platform-express
-npm install @nestjs/config @nestjs/jwt @nestjs/passport
-npm install @nestjs/schedule  # CronJob cho Data Freshness
-
-# Database
+# === Production Dependencies ===
 npm install @prisma/client
-npm install -D prisma
-
-# Security
-npm install bcrypt passport passport-jwt
-npm install -D @types/bcrypt @types/passport-jwt
-
-# Validation
+npm install @nestjs/config
+npm install @nestjs/jwt @nestjs/passport passport passport-jwt
+npm install bcrypt
 npm install class-validator class-transformer
+npm install @nestjs/schedule
 
-# Cache (Redis)
-npm install @nestjs/cache-manager cache-manager
-npm install cache-manager-redis-yet redis
-
-# File Upload
-npm install @nestjs/platform-express multer
-npm install -D @types/multer
-
-# SMS (Twilio) - có thể cài sau ở Phase 5
-# npm install twilio
+# === Dev Dependencies ===
+npm install -D prisma
+npm install -D @types/bcrypt @types/passport-jwt
 ```
 
-**Kiểm tra:**
-```bash
-cd backend && npm run build
-```
+**Giải thích:**
+| Package | Mục đích |
+|---|---|
+| `@prisma/client` | ORM cho PostgreSQL |
+| `@nestjs/config` | Đọc biến `.env` |
+| `@nestjs/jwt`, `passport`, `passport-jwt` | JWT authentication |
+| `bcrypt` | Hash password |
+| `class-validator`, `class-transformer` | DTO validation |
+| `@nestjs/schedule` | Cron-job Data Freshness |
 
-**Commit:** `chore: update backend dependencies`
+**Commit:** `chore: install backend dependencies`
 
 ---
 
-## Task 0.3: Cài đặt / Cập nhật Dependencies cho Frontend
+## Task 0.3: Khởi tạo Next.js Frontend
 
-**File cần sửa:** `frontend/package.json`
+```bash
+cd WDA2026-THEINSPO-MedTag
+npx -y create-next-app@latest frontend --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --skip-git --use-npm
+```
 
-**Dependencies cần có:**
+**Flags:**
+- `--typescript` TypeScript
+- `--tailwind` TailwindCSS
+- `--app` App Router (không dùng Pages Router)
+- `--src-dir` Đặt source trong `src/`
+- `--skip-git` Không tạo `.git` riêng
+- `--use-npm` Dùng npm (không phải yarn/pnpm)
+
+**Commit:** `chore: initialize fresh Next.js frontend`
+
+---
+
+## Task 0.4: Cài đặt Frontend Dependencies
+
 ```bash
 cd frontend
 
-# Core (đã có)
-# next react react-dom tailwindcss
-
-# PWA Support
-npm install next-pwa
-
-# Icons
-npm install lucide-react
-
-# Form Management
-npm install react-hook-form @hookform/resolvers zod
-
-# HTTP Client
-npm install axios
-
-# Toast Notifications  
-npm install react-hot-toast
-
-# Date utilities
-npm install date-fns
+npm install lucide-react           # Icons
+npm install react-hook-form        # Form management
+npm install @hookform/resolvers    # Zod integration
+npm install zod                    # Schema validation
+npm install react-hot-toast        # Toast notifications
+npm install date-fns               # Date utilities
 ```
 
-**Kiểm tra:**
-```bash
-cd frontend && npm run build
-```
-
-**Commit:** `chore: update frontend dependencies`
+**Commit:** `chore: install frontend dependencies`
 
 ---
 
-## Task 0.4: Cấu hình biến môi trường
+## Task 0.5: Cấu hình Backend .env + main.ts
 
-### Backend: `backend/.env`
+### `backend/.env`
 ```env
-# === Database (Supabase PostgreSQL) ===
-DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
+# Database (Supabase PostgreSQL)
+DATABASE_URL="postgresql://postgres.uhonbkmaqjuxvysmegfe:DUCphat%4018306@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.uhonbkmaqjuxvysmegfe:DUCphat%4018306@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
 
-# === Security ===
-JWT_SECRET="[RANDOM_64_CHAR_HEX_STRING]"
-AES_SECRET_KEY="[RANDOM_64_CHAR_HEX_STRING]"
+# JWT
+JWT_SECRET="medtag-super-secret-jwt-key"
 
-# Tạo random hex:
-# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# AES-256 (32 bytes hex)
+AES_SECRET_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 
-# === Redis (Upstash) ===
-REDIS_URL="redis://default:[PASSWORD]@[HOST].upstash.io:6379"
-
-# === Twilio (Phase 5 – Mock for now) ===
-TWILIO_ACCOUNT_SID="AC_MOCK"
-TWILIO_AUTH_TOKEN="MOCK_TOKEN"
-TWILIO_PHONE_NUMBER="+10000000000"
-
-# === Server ===
+# Server
 PORT=3001
-NODE_ENV=development
 FRONTEND_URL="http://localhost:3000"
 ```
 
-### Frontend: `frontend/.env.local`
-```env
-NEXT_PUBLIC_API_URL="http://localhost:3001/api"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-```
-
-### `.gitignore` phải chứa:
-```
-.env
-.env.local
-.env.production
-```
-
-**Commit:** `chore: configure environment variables (template)`
-
----
-
-## Task 0.5: Cấu hình CORS + Global Pipes cho Backend
-
-**File:** `backend/src/main.ts`
-
+### `backend/src/main.ts`
 ```typescript
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -172,29 +125,23 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS
   app.enableCors({
     origin: [
       process.env.FRONTEND_URL || 'http://localhost:3000',
-      'https://medtag.vercel.app',  // Production frontend
+      'https://medtag.vercel.app',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   });
 
-  // Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,        // Strip unknown properties
+      whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true,        // Auto-transform DTO types
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
+      transform: true,
     }),
   );
 
-  // Global Prefix
   app.setGlobalPrefix('api');
 
   const port = process.env.PORT || 3001;
@@ -204,41 +151,58 @@ async function bootstrap() {
 bootstrap();
 ```
 
-**Kiểm tra:**
-```bash
-cd backend && npm run start:dev
-# Truy cập http://localhost:3001/api → Should return "Hello World!"
+### `frontend/.env.local`
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-**Commit:** `feat: configure CORS, ValidationPipe, global prefix /api`
+**Commit:** `chore: configure env, CORS, ValidationPipe, global prefix`
+
+---
+
+## Task 0.6: Prisma Init + Schema
+
+```bash
+cd backend
+npx prisma init
+```
+
+Sau đó copy toàn bộ schema từ `02. PTTKHT/04_Database_Schema_Design.md` vào `backend/prisma/schema.prisma`.
+
+```bash
+npx prisma generate         # Generate client
+npx prisma migrate dev --name "init"   # Tạo migration + sync DB
+```
+
+**Commit:** `feat: Prisma schema v2 with full ERD`
+
+---
+
+## Task 0.7: Verify cả 2 projects chạy được
+
+```bash
+# Terminal 1
+cd backend && npm run start:dev
+# Expected: 🚀 MedTag Backend running on http://localhost:3001/api
+
+# Terminal 2
+cd frontend && npm run dev
+# Expected: ✓ Ready on http://localhost:3000
+```
+
+**Commit:** `chore: verify both projects run successfully`
 
 ---
 
 ## ✅ Checklist Phase 0
 
-- [ ] Task 0.1: Kiểm tra cấu trúc monorepo
-- [ ] Task 0.2: Backend dependencies
-- [ ] Task 0.3: Frontend dependencies
-- [ ] Task 0.4: Environment variables
-- [ ] Task 0.5: CORS + Global Pipes
+- [ ] Task 0.1: Khởi tạo NestJS backend
+- [ ] Task 0.2: Cài backend dependencies
+- [ ] Task 0.3: Khởi tạo Next.js frontend
+- [ ] Task 0.4: Cài frontend dependencies
+- [ ] Task 0.5: Cấu hình .env + main.ts
+- [ ] Task 0.6: Prisma init + schema + migration
+- [ ] Task 0.7: Verify cả 2 chạy được
 
 **Khi tất cả ✅ → Chuyển sang Phase 1**
-
----
-
-## 🤖 Prompt Template Cho AI Agent
-
-```
-Ngữ cảnh: Tôi đang phát triển dự án MedTag – Hệ thống thông tin y tế khẩn cấp.
-Tech stack: Next.js (Frontend) + NestJS (Backend) + PostgreSQL (Supabase) + Prisma ORM.
-
-Hãy đọc file sau để hiểu kiến trúc:
-- 02. PTTKHT/07_System_Architecture.md
-
-Task hiện tại: [MÔ TẢ TASK CỤ THỂ]
-
-Yêu cầu:
-- TypeScript strict mode
-- Tuân thủ NestJS Module/Controller/Service pattern
-- Code phải compile thành công (npm run build)
-```

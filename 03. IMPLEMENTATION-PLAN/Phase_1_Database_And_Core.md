@@ -1,22 +1,28 @@
 # Phase 1: Database & Core Backend Modules
 
-> **Mục tiêu:** Hoàn thiện Prisma Schema, chạy migration, tạo các module nền tảng (Prisma, Auth, Crypto) để các Phase sau xây dựng lên trên.
+> **Mục tiêu:** Tạo các module nền tảng mà tất cả Phase sau phụ thuộc:
+> PrismaModule (singleton), AuthModule (JWT), CryptoModule (AES-256), Common Guards.
+> Kết thúc Phase 1 khi có thể Register/Login user và encrypt/decrypt dữ liệu.
 
 ---
 
-## Tham Chiếu Tài Liệu
-- `02. PTTKHT/04_Database_Schema_Design.md` → Schema chi tiết
-- `02. PTTKHT/07_System_Architecture.md` → Cấu trúc module NestJS
+## Tham Chiếu
+- `02. PTTKHT/04_Database_Schema_Design.md` → Schema + Encrypted JSON
+- `02. PTTKHT/05_API_Specification.md` → API Auth
+- `02. PTTKHT/09_Module_Dependency_Map.md` → Module imports
 
 ---
 
-## Task 1.1: Tạo PrismaModule (Singleton)
+## Task 1.1: Tạo PrismaModule (Global Singleton)
 
-**Vấn đề hiện tại:** Code đang dùng `new PrismaClient()` trực tiếp trong Service → tạo nhiều connection pool → memory leak.
+### Tạo files:
+```
+backend/src/prisma/
+├── prisma.module.ts
+└── prisma.service.ts
+```
 
-**File cần tạo:**
-
-### `backend/src/prisma/prisma.module.ts`
+### `prisma.module.ts`
 ```typescript
 import { Global, Module } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
@@ -29,7 +35,7 @@ import { PrismaService } from './prisma.service';
 export class PrismaModule {}
 ```
 
-### `backend/src/prisma/prisma.service.ts`
+### `prisma.service.ts`
 ```typescript
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
@@ -45,236 +51,162 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 }
 ```
 
-**Cập nhật:** `backend/src/app.module.ts` → Import `PrismaModule`.
+**Import vào `app.module.ts`.**
 
-**Commit:** `feat: add PrismaModule singleton service`
-
----
-
-## Task 1.2: Cập nhật Prisma Schema (Full Version)
-
-**File:** `backend/prisma/schema.prisma`
-
-Thay thế schema hiện tại bằng schema hoàn chỉnh từ `02. PTTKHT/04_Database_Schema_Design.md`:
-
-**Thay đổi quan trọng so với schema cũ:**
-| Thay đổi | Cũ | Mới |
-|---|---|---|
-| `bloodType` | `String?` | `BloodType` Enum |
-| `allergies` | `String?` | `Json?` (mảng) |
-| `dangerousConditions` | `String?` | `Json?` (mảng) |
-| Thêm `dateOfBirth` | ❌ | `DateTime?` |
-| Thêm `gender` | ❌ | `Gender` Enum |
-| Thêm `dataFreshnessStatus` | ❌ | `DataFreshnessStatus` Enum |
-| Thêm `dataConfirmedAt` | ❌ | `DateTime` |
-| `Device.shortId` | Dùng qrCode | Tách riêng `shortId` + `qrCode` |
-| `Device.label` | ❌ | `String?` |
-| `EmergencyLog` mở rộng | Cơ bản | Thêm `bystanderIp`, `smsStatus`, `resolvedBy` |
-| `AuditLog` | ❌ | Bảng mới hoàn toàn |
-
-**Hành động:**
-```bash
-cd backend
-
-# Copy schema từ tài liệu 04_Database_Schema_Design.md phần 3
-
-# Tạo migration
-npx prisma migrate dev --name "full_schema_v2"
-
-# Generate client
-npx prisma generate
-
-# Verify
-npx prisma studio  # Mở browser xem bảng
-```
-
-**Commit:** `feat: update Prisma schema v2 (full ERD with AuditLog)`
+**Commit:** `feat: PrismaModule global singleton`
 
 ---
 
-## Task 1.3: Cập nhật Seed Data
+## Task 1.2: Tạo CryptoModule (AES-256-CBC)
 
-**File:** `backend/prisma/seed.ts`
+### Tạo files:
+```
+backend/src/crypto/
+├── crypto.module.ts
+└── crypto.service.ts
+```
 
-Mở rộng seed data để cover tất cả use case testing:
-
+### `crypto.service.ts`
 ```typescript
-// Seed cần tạo:
-// 1. Guardian user (email: nguoithan@medtag.vn, pass: 123456)
-// 2. Doctor user (email: bacsi@medtag.vn, pass: 123456, role: DOCTOR)
-// 3. Admin user (email: admin@medtag.vn, pass: 123456, role: ADMIN)
-// 4. MedicalRecord #1 (Ông - O+, allergies: [Penicillin, Đậu phộng])
-//    - encryptedMedicalData: encrypt(JSON chi tiết bệnh án)
-// 5. MedicalRecord #2 (Bà - AB-, allergies: [Sulfonamide])
-// 6. Device #1 (shortId: X7K9A2, linkedTo: Record #1)
-// 7. Device #2 (shortId: B3M5T8, linkedTo: Record #1)
-// 8. Device #3 (shortId: K2P7L4, linkedTo: Record #2)
-// 9. EmergencyLog sample (TRIGGERED + RESOLVED)
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+
+@Injectable()
+export class CryptoService {
+  private readonly algorithm = 'aes-256-cbc';
+  private readonly key: Buffer;
+
+  constructor(private config: ConfigService) {
+    const hexKey = this.config.get<string>('AES_SECRET_KEY');
+    this.key = Buffer.from(hexKey, 'hex');
+  }
+
+  encrypt(plaintext: string): string {
+    const iv = randomBytes(16);
+    const cipher = createCipheriv(this.algorithm, this.key, iv);
+    const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+    return `${iv.toString('hex')}:${encrypted.toString('hex')}`;
+  }
+
+  decrypt(ciphertext: string): string {
+    const [ivHex, encHex] = ciphertext.split(':');
+    const iv = Buffer.from(ivHex, 'hex');
+    const encrypted = Buffer.from(encHex, 'hex');
+    const decipher = createDecipheriv(this.algorithm, this.key, iv);
+    const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+    return decrypted.toString('utf8');
+  }
+}
 ```
 
-**Lưu ý:** Seed phải GỌI `CryptoService.encrypt()` để mã hóa `encryptedMedicalData` → test giải mã sau này.
+### `crypto.module.ts`
+```typescript
+import { Module } from '@nestjs/common';
+import { CryptoService } from './crypto.service';
 
-```bash
-npx prisma db seed
+@Module({
+  providers: [CryptoService],
+  exports: [CryptoService],
+})
+export class CryptoModule {}
 ```
 
-**Commit:** `feat: expand seed data with Doctor, múltiple records and devices`
+**Commit:** `feat: CryptoModule AES-256-CBC encrypt/decrypt`
 
 ---
 
-## Task 1.4: Refactor AuthModule (JWT + Passport Strategy)
+## Task 1.3: Tạo AuthModule (Register + Login + JWT)
 
-**File hiện tại:** `backend/src/auth/auth.service.ts` → chỉ có hash/compare/sign.
+### Tạo files:
+```
+backend/src/auth/
+├── auth.module.ts
+├── auth.controller.ts
+├── auth.service.ts
+├── strategies/
+│   └── jwt.strategy.ts
+└── dto/
+    ├── register.dto.ts
+    └── login.dto.ts
+```
 
-**Cần bổ sung:**
+### Endpoints:
+- `POST /api/auth/register` → Tạo user mới, hash password, trả JWT
+- `POST /api/auth/login` → Verify credentials, trả JWT
+- `GET /api/auth/me` → Protected, trả thông tin user hiện tại
 
-### `backend/src/auth/auth.controller.ts` (MỚI)
+### DTOs:
 ```typescript
-// POST /api/auth/register
-// POST /api/auth/login
-// GET  /api/auth/me (Protected)
+// register.dto.ts
+export class RegisterDto {
+  @IsEmail() email: string;
+  @IsString() @MinLength(6) password: string;
+  @IsString() @MinLength(2) fullName: string;
+  @IsOptional() @IsString() phoneNumber?: string;
+}
+
+// login.dto.ts
+export class LoginDto {
+  @IsEmail() email: string;
+  @IsString() password: string;
+}
 ```
 
-### `backend/src/auth/strategies/jwt.strategy.ts` (MỚI)
-```typescript
-// Passport JWT strategy: extract token từ Authorization header
-// Validate payload → inject vào request.user
-```
+### Logic:
+1. `register()`: Check email unique → bcrypt hash → Prisma create User → sign JWT
+2. `login()`: Find by email → bcrypt compare → sign JWT → return { user, token }
+3. `me()`: JwtAuthGuard → return request.user (trừ password)
 
-### `backend/src/auth/dto/register.dto.ts` (MỚI)
-```typescript
-// class RegisterDto {
-//   @IsEmail() email: string;
-//   @MinLength(8) password: string;
-//   @IsString() fullName: string;
-//   @IsOptional() @IsString() phoneNumber?: string;
-// }
-```
+### JWT Strategy:
+- Extract token từ `Authorization: Bearer <token>`
+- Payload: `{ sub: userId, email, role }`
+- Validate: Find user by id, return user object
 
-### `backend/src/auth/dto/login.dto.ts` (MỚI)
-```typescript
-// class LoginDto {
-//   @IsEmail() email: string;
-//   @IsString() password: string;
-// }
-```
-
-**Logic chính:**
-1. `register()`: Check email unique → hash password → create User → generate JWT → return token
-2. `login()`: Find user by email → compare bcrypt → generate JWT → return { user, token }
-3. `me()`: Dùng JwtAuthGuard → return request.user
-
-**Kiểm tra:**
-```bash
-# Test register
-curl -X POST http://localhost:3001/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"Test1234","fullName":"Test User"}'
-
-# Test login
-curl -X POST http://localhost:3001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"nguoithan@medtag.vn","password":"123456"}'
-```
-
-**Commit:** `feat: complete AuthModule with register, login, JWT strategy`
+**Commit:** `feat: AuthModule with register, login, JWT strategy`
 
 ---
 
-## Task 1.5: Tạo Common Guards & Decorators
+## Task 1.4: Common Guards & Decorators
 
-### `backend/src/common/guards/jwt-auth.guard.ts`
-```typescript
-// Extends AuthGuard('jwt') from @nestjs/passport
-// Sử dụng: @UseGuards(JwtAuthGuard)
+### Tạo files:
+```
+backend/src/common/
+├── guards/
+│   ├── jwt-auth.guard.ts
+│   └── roles.guard.ts
+├── decorators/
+│   ├── current-user.decorator.ts
+│   └── roles.decorator.ts
+└── filters/
+    └── http-exception.filter.ts
 ```
 
-### `backend/src/common/guards/roles.guard.ts`
-```typescript
-// Role-based guard: kiểm tra user.role có nằm trong @Roles() không
-// Sử dụng: @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.DOCTOR)
-```
+### Guards:
+- `JwtAuthGuard`: extends `AuthGuard('jwt')` → verify JWT
+- `RolesGuard`: kiểm tra `user.role` có nằm trong `@Roles()` metadata không
 
-### `backend/src/common/decorators/current-user.decorator.ts`
-```typescript
-// @CurrentUser() → lấy user từ request
-// Sử dụng: getProfile(@CurrentUser() user: User)
-```
+### Decorators:
+- `@CurrentUser()`: lấy user từ `request.user`
+- `@Roles(Role.GUARDIAN, Role.DOCTOR)`: set metadata
 
-### `backend/src/common/decorators/roles.decorator.ts`
-```typescript
-// @Roles(Role.GUARDIAN, Role.DOCTOR) → set metadata
-```
+### Filter:
+- Global exception filter: format error chuẩn `{ statusCode, message, error, timestamp }`
 
-### `backend/src/common/filters/http-exception.filter.ts`
-```typescript
-// Global exception filter: format error response chuẩn JSON
-// { statusCode, message, error, timestamp }
-```
-
-**Commit:** `feat: add JwtAuthGuard, RolesGuard, CurrentUser decorator, ExceptionFilter`
+**Commit:** `feat: guards, decorators, exception filter`
 
 ---
 
-## Task 1.6: Verify CryptoModule (AES-256)
-
-**Trạng thái hiện tại:** `CryptoService` đã có encrypt/decrypt hoạt động.
-
-**Cần kiểm tra:**
-1. Encrypt một JSON bệnh án mẫu → verify format output `iv:ciphertext`
-2. Decrypt kết quả → so sánh plaintext = input gốc
-3. Xử lý edge case: empty string, unicode tiếng Việt
-
-**Viết test:**
-```bash
-cd backend
-npx jest --testPathPattern crypto
-```
-
-**Commit:** `test: verify CryptoService AES-256 encrypt/decrypt`
-
----
-
-## Task 1.7: Tạo CacheModule (Redis)
-
-### `backend/src/cache/cache.module.ts`
-```typescript
-// Import @nestjs/cache-manager
-// Register với Redis store (Upstash URL từ env)
-```
-
-### `backend/src/cache/cache.service.ts`
-```typescript
-// Wrapper service:
-// get<T>(key: string): Promise<T | null>
-// set(key: string, value: any, ttl: number): Promise<void>
-// del(key: string): Promise<void>
-// invalidatePattern(pattern: string): Promise<void>
-```
-
-**Fallback:** Nếu Redis URL không có (dev mode), dùng in-memory cache.
-
-**Commit:** `feat: add CacheModule with Redis support`
-
----
-
-## Task 1.8: Cập nhật AppModule imports
-
-**File:** `backend/src/app.module.ts`
+## Task 1.5: Wire Up AppModule
 
 ```typescript
+// backend/src/app.module.ts
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    PrismaModule,        // ← Global singleton
-    AuthModule,
+    PrismaModule,
     CryptoModule,
-    CacheModule,         // ← Redis
-    EmergencyModule,     // ← Sẽ Refactor ở Phase 2
-    // PortalModule,     // ← Phase 3
-    // MedicalModule,    // ← Phase 4
-    // NotificationModule, // ← Phase 5
-    // SchedulerModule,  // ← Phase 5
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -282,44 +214,68 @@ npx jest --testPathPattern crypto
 export class AppModule {}
 ```
 
-**Commit:** `feat: update AppModule with all core module imports`
+**Commit:** `feat: wire up AppModule with core modules`
+
+---
+
+## Task 1.6: Seed Data
+
+### `backend/prisma/seed.ts`
+
+Tạo dữ liệu test:
+1. **Guardian** user: `nguoithan@medtag.vn` / `123456` (Role: GUARDIAN)
+2. **Doctor** user: `bacsi@medtag.vn` / `123456` (Role: DOCTOR)
+3. **MedicalRecord #1**: Ông Nguyễn Văn A (O+, allergies, conditions)
+   - encryptedMedicalData = CryptoService.encrypt(JSON bệnh án chi tiết)
+4. **MedicalRecord #2**: Bà Nguyễn Thị B (AB-)
+5. **Device #1**: shortId `X7K9A2` → linked to Record #1
+6. **Device #2**: shortId `B3M5T8` → linked to Record #1
+7. **Device #3**: shortId `K2P7L4` → linked to Record #2
+8. **EmergencyLog** sample
+
+```bash
+npx prisma db seed
+```
+
+**Commit:** `feat: comprehensive seed data with encrypted records`
+
+---
+
+## Task 1.7: Verification – Test Core APIs
+
+```bash
+# 1. Check compile
+cd backend && npm run build
+
+# 2. Start server
+npm run start:dev
+
+# 3. Test register
+curl -X POST http://localhost:3001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@test.com","password":"Test1234","fullName":"Test User"}'
+
+# 4. Test login
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"nguoithan@medtag.vn","password":"123456"}'
+
+# 5. Test me (with token from step 4)
+curl http://localhost:3001/api/auth/me -H "Authorization: Bearer TOKEN_HERE"
+```
+
+**Commit:** `test: verify auth flow works end-to-end`
 
 ---
 
 ## ✅ Checklist Phase 1
 
 - [ ] Task 1.1: PrismaModule singleton
-- [ ] Task 1.2: Full Prisma schema v2 + migration
-- [ ] Task 1.3: Expanded seed data
-- [ ] Task 1.4: AuthModule (register, login, JWT strategy)
-- [ ] Task 1.5: Common guards & decorators
-- [ ] Task 1.6: Verify CryptoModule
-- [ ] Task 1.7: CacheModule (Redis)
-- [ ] Task 1.8: AppModule imports
+- [ ] Task 1.2: CryptoModule (AES-256)
+- [ ] Task 1.3: AuthModule (register, login, JWT)
+- [ ] Task 1.4: Common guards & decorators
+- [ ] Task 1.5: Wire up AppModule
+- [ ] Task 1.6: Seed data
+- [ ] Task 1.7: Verification
 
-**Khi tất cả ✅ → Chuyển sang Phase 2 và/hoặc Phase 3 (có thể song song)**
-
----
-
-## 🤖 Prompt Template Cho AI Agent (Phase 1)
-
-```
-Ngữ cảnh: Dự án MedTag – NestJS backend monorepo.
-Tôi đang ở Phase 1: Database & Core Backend.
-
-Hãy đọc các file sau:
-- 02. PTTKHT/04_Database_Schema_Design.md (Prisma Schema đề xuất)
-- 02. PTTKHT/05_API_Specification.md (API /api/auth/*)
-- backend/prisma/schema.prisma (schema hiện tại)
-- backend/src/auth/auth.service.ts (auth hiện tại)
-
-Task: [MÔ TẢ CỤ THỂ, ví dụ:
-  "Tạo file backend/src/common/guards/jwt-auth.guard.ts sử dụng
-   Passport JWT strategy. Guard phải verify JWT token từ
-   Authorization: Bearer header và inject user vào request."]
-
-Ràng buộc:
-- TypeScript strict, không dùng `any`
-- Tuân thủ NestJS Module/Controller/Service
-- Phải compile thành công: npm run build
-```
+**Khi tất cả ✅ → Phase 2 + Phase 3 có thể song song**
