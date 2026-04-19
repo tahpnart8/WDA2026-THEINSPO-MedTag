@@ -7,6 +7,7 @@ import { CryptoModule } from './crypto/crypto.module';
 import { AuthModule } from './auth/auth.module';
 import { EmergencyModule } from './emergency/emergency.module';
 import { PortalModule } from './portal/portal.module';
+import { MedicalModule } from './medical/medical.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -18,6 +19,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     AuthModule,
     EmergencyModule,
     PortalModule,
+    MedicalModule,
   ],
   controllers: [AppController],
   providers: [

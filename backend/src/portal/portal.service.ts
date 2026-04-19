@@ -51,7 +51,7 @@ export class PortalService {
 
     async createRecord(userId: string, dto: CreateMedicalRecordDto) {
         let encryptedData = null;
-        if (dto.detailedMedicalData && Object.keys(dto.detailedMedicalData).length > 0) {
+        if (typeof dto.detailedMedicalData === 'object' && dto.detailedMedicalData !== null && Object.keys(dto.detailedMedicalData).length > 0) {
             encryptedData = this.crypto.encrypt(JSON.stringify(dto.detailedMedicalData));
         }
 
@@ -62,8 +62,8 @@ export class PortalService {
                 dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
                 gender: dto.gender || null,
                 bloodType: dto.bloodType || 'UNKNOWN',
-                allergies: (dto.allergies || []) as Prisma.InputJsonValue,
-                dangerousConditions: (dto.dangerousConditions || []) as Prisma.InputJsonValue,
+                allergies: (dto.allergies || []) as any,
+                dangerousConditions: (dto.dangerousConditions || []) as any,
                 emergencyPhone: dto.emergencyPhone || null,
                 emergencyContactName: dto.emergencyContactName || null,
                 encryptedMedicalData: encryptedData,
@@ -88,8 +88,8 @@ export class PortalService {
                 dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : record.dateOfBirth,
                 gender: dto.gender !== undefined ? dto.gender : record.gender,
                 bloodType: dto.bloodType !== undefined ? dto.bloodType : record.bloodType,
-                allergies: dto.allergies !== undefined ? (dto.allergies as Prisma.InputJsonValue) : record.allergies,
-                dangerousConditions: dto.dangerousConditions !== undefined ? (dto.dangerousConditions as Prisma.InputJsonValue) : record.dangerousConditions,
+                allergies: dto.allergies !== undefined ? (dto.allergies as any) : record.allergies,
+                dangerousConditions: dto.dangerousConditions !== undefined ? (dto.dangerousConditions as any) : record.dangerousConditions,
                 emergencyPhone: dto.emergencyPhone !== undefined ? dto.emergencyPhone : record.emergencyPhone,
                 emergencyContactName: dto.emergencyContactName !== undefined ? dto.emergencyContactName : record.emergencyContactName,
                 encryptedMedicalData: encryptedData,
