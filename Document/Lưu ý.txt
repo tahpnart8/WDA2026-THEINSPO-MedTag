@@ -1,0 +1,6 @@
+Lưu ý:
+1. Các đội thi chỉ thực hiện design poster chính không thiết kế bìa (header/footer).
+2. Đúng kích thước mà BTC yêu cầu trong thể lệ
+3. Poster cần nộp gồm 2 file:
+- 1 file ảnh .png
+- 1 file thiết kế *.ai hoặc .psd hoặc .fig
