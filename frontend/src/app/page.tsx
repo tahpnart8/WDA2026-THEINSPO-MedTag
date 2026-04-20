@@ -20,13 +20,10 @@ export default function LandingPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl" />
 
       <div className="max-w-md w-full bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white z-10 text-center animate-in slide-in-from-bottom-8 duration-700">
-        <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-lg shadow-blue-600/10 rotate-3 transition-transform hover:rotate-0 hover:scale-105 cursor-default overflow-hidden border border-gray-100">
-          <img src="/logo.png" alt="MedTag Logo" className="w-full h-full object-contain p-1" />
+        <div className="w-24 h-24 bg-blue-600 text-white rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-lg shadow-blue-600/30 rotate-3 transition-transform hover:rotate-0 hover:scale-105 cursor-default">
+          <HeartPulse size={48} strokeWidth={2.5} />
         </div>
-        <h1 className="text-4xl font-black mb-2 tracking-tighter">
-          <span className="text-blue-600">Med</span>
-          <span className="text-yellow-400">Tag</span>
-        </h1>
+        <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tighter">MedTag<span className="text-blue-600">.vn</span></h1>
         <p className="text-gray-500 font-medium text-lg leading-snug mb-8">Hệ thống nhận diện y tế<br />& cấp cứu mã nguồn mở</p>
 
         <form onSubmit={handleSearch} className="flex flex-col gap-4">

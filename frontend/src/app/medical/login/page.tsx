@@ -88,12 +88,11 @@ export default function DoctorLoginPage() {
                     <div className="absolute -top-10 -right-10 opacity-10">
                         <Stethoscope size={200} />
                     </div>
-                    <div className="w-20 h-20 bg-white rounded-3xl mx-auto flex items-center justify-center mb-5 border border-white/30 shadow-lg overflow-hidden">
-                        <img src="/logo.png" alt="MedTag Logo" className="w-full h-full object-contain p-1" />
+                    <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mx-auto flex items-center justify-center mb-5 border border-white/30 shadow-lg">
+                        <Stethoscope size={40} className="text-white" strokeWidth={2} />
                     </div>
                     <h1 className="text-3xl font-black text-white mb-2 tracking-tighter">
-                        <span className="text-white">Med</span>
-                        <span className="text-yellow-300">Tag</span> <span className="text-white/80">Pro</span>
+                        MedTag Pro
                     </h1>
                     <p className="text-blue-100 font-bold text-xs uppercase tracking-widest">Cổng Y Tế Đặc Quyền</p>
                 </div>
