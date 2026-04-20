@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BloodType } from '@prisma/client';
 import { TriggerSosDto } from './dto/trigger-sos.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class EmergencyService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly notification: NotificationService
+    ) { }
 
     private bloodTypeDisplay(bt: BloodType): string {
         const map: Record<BloodType, string> = {
@@ -56,7 +60,7 @@ export class EmergencyService {
     async triggerSOS(shortId: string, dto: TriggerSosDto, ip: string, ua: string) {
         const device = await this.prisma.device.findUnique({
             where: { shortId },
-            include: { medicalRecord: true }
+            include: { medicalRecord: { include: { guardian: true } } }
         });
 
         if (!device || !device.isActive) throw new NotFoundException('Mã thiết bị không hợp lệ.');
@@ -72,6 +76,14 @@ export class EmergencyService {
                 status: 'TRIGGERED',
             }
         });
+
+        const mapsUrl = dto.latitude && dto.longitude ? `https://maps.google.com/?q=${dto.latitude},${dto.longitude}` : 'Vị trí chưa xác định';
+
+        const phone = device.medicalRecord.emergencyPhone || device.medicalRecord.guardian.phoneNumber;
+        if (phone) {
+            // Không await để request API không bị block bởi chức năng SMS
+            this.notification.sendEmergencySMS(phone, device.medicalRecord.patientName, mapsUrl).catch(console.error);
+        }
 
         return {
             success: true,

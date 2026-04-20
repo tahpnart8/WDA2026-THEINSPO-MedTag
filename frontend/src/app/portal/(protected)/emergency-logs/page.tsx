@@ -38,7 +38,7 @@ export default function EmergencyLogsPage() {
                     <div className="w-20 h-20 bg-emerald-50 rounded-[1.5rem] flex items-center justify-center mb-6">
                         <FileWarning size={40} className="text-emerald-400" />
                     </div>
-                    <h3 className="text-xl font-black text-slate-800 mb-2">Quá An Toàn!</h3>
+                    <h3 className="text-xl font-black text-slate-800 mb-2">An Toàn</h3>
                     <p className="text-slate-500 text-sm">Chưa có sự cố SOS nào xảy ra với người thân của bạn.</p>
                 </div>
             ) : (
