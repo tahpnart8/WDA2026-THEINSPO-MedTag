@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { fetchWithAuth } from '@/lib/auth';
 import Link from 'next/link';
+import { Plus, Smartphone, Siren, FolderOpen } from 'lucide-react';
 
 export default function PatientsListPage() {
     const [records, setRecords] = useState<any[]>([]);
@@ -25,64 +26,63 @@ export default function PatientsListPage() {
     }, []);
 
     return (
-        <div className="animate-in fade-in duration-500">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+        <div className="animate-in fade-in duration-500 pb-12">
+            <div className="flex flex-col gap-4 mb-6">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 mb-2">Hồ Sơ Bệnh Nhân</h1>
-                    <p className="text-gray-500 font-medium">Quản lý thông tin y tế của người thân.</p>
+                    <h1 className="text-2xl font-black text-slate-800 mb-1">Hồ Sơ Của Bạn</h1>
+                    <p className="text-slate-500 font-medium text-sm">Quản lý bệnh án người thân.</p>
                 </div>
-                <Link href="/portal/patients/create" className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all flex items-center gap-2 shrink-0">
-                    <span>+</span> Thêm Hồ Sơ Mới
+                <Link href="/portal/patients/create" className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-2xl shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                    <Plus size={20} /> Thêm Hồ Sơ
                 </Link>
             </div>
 
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-x-auto">
-                {isLoading ? (
-                    <div className="p-8 text-center text-gray-500 font-medium">Đang tải danh sách...</div>
-                ) : records.length === 0 ? (
-                    <div className="p-12 text-center">
-                        <div className="text-6xl mb-4">📭</div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Chưa có hồ sơ nào</h3>
-                        <p className="text-gray-500 mb-6">Bạn chưa tạo hồ sơ y tế nào cho người thân.</p>
+            {isLoading ? (
+                <div className="bg-slate-50 border border-slate-100 p-8 rounded-[2rem] text-center text-slate-400 font-bold">Đang tải dữ liệu...</div>
+            ) : records.length === 0 ? (
+                <div className="bg-slate-50 border border-slate-100 p-12 rounded-[2rem] text-center">
+                    <div className="w-20 h-20 bg-slate-100 mx-auto rounded-full flex items-center justify-center mb-4">
+                        <FolderOpen size={32} className="text-slate-300" />
                     </div>
-                ) : (
-                    <table className="w-full text-left border-collapse whitespace-nowrap">
-                        <thead>
-                            <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest font-bold border-b border-gray-100">
-                                <th className="p-4 pl-6">Họ và Tên</th>
-                                <th className="p-4">Nhóm Máu</th>
-                                <th className="p-4">Tình trạng dữ liệu</th>
-                                <th className="p-4 text-center">Thiết bị</th>
-                                <th className="p-4 text-center">Lần SOS</th>
-                                <th className="p-4 pr-6 text-right">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {records.map((r) => (
-                                <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="p-4 pl-6 font-bold text-gray-900">{r.patientName}</td>
-                                    <td className="p-4">
-                                        <span className="text-gray-600 font-medium font-mono bg-gray-50 rounded border border-gray-200 px-2 py-1 inline-block">
+                    <h3 className="text-lg font-black text-slate-800 mb-1">Trống!</h3>
+                    <p className="text-slate-500 text-sm">Chưa có hồ sơ nào được tạo.</p>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-4">
+                    {records.map(r => (
+                        <div key={r.id} className="bg-white p-5 rounded-[2rem] border border-blue-50 shadow-sm flex flex-col">
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 className="font-black text-xl text-slate-800">{r.patientName}</h3>
+                                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                                        <span className="bg-red-50 text-red-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider font-mono">
                                             {r.bloodType.replace('_POSITIVE', '+').replace('_NEGATIVE', '-')}
                                         </span>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${r.dataFreshnessStatus === 'FRESH' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                                            }`}>
-                                            {r.dataFreshnessStatus === 'FRESH' ? 'Đã xác nhận (Mới)' : 'Cần xác nhận'}
+                                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${r.dataFreshnessStatus === 'FRESH' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                            {r.dataFreshnessStatus === 'FRESH' ? 'DỮ LIỆU TỐT' : 'CẦN CẬP NHẬT'}
                                         </span>
-                                    </td>
-                                    <td className="p-4 text-gray-500 font-bold text-center">{r._count?.devices || 0}</td>
-                                    <td className="p-4 text-gray-500 font-bold text-center">{r._count?.emergencyLogs || 0}</td>
-                                    <td className="p-4 pr-6 text-right">
-                                        <Link href={`/portal/patients/${r.id}`} className="px-3 py-1.5 bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 rounded-lg transition-colors">Chi tiết</Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-6 mb-5 border-t border-slate-50 pt-4 mt-1">
+                                <div className="flex items-center gap-2 text-slate-600">
+                                    <Smartphone className="opacity-50" size={16} />
+                                    <span className="font-bold text-sm">{r._count?.devices || 0} thẻ</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-slate-600">
+                                    <Siren className="text-red-400 opacity-80" size={16} />
+                                    <span className="font-bold text-sm">{r._count?.emergencyLogs || 0} lần SOS</span>
+                                </div>
+                            </div>
+
+                            <Link href={`/portal/patients/${r.id}`} className="bg-blue-50 text-blue-600 font-bold text-sm py-3 text-center rounded-xl hover:bg-blue-100 transition-colors w-full tracking-wide">
+                                CẬP NHẬT GHI CHÚ
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

@@ -25,7 +25,7 @@ export default async function EmergencyPage({ params }: { params: Promise<{ shor
 
     return (
         <ClientGateWrapper>
-            <main className="max-w-md mx-auto min-h-screen bg-gray-50 pb-12 pt-8 px-4 font-sans selection:bg-blue-200">
+            <main className="max-w-md mx-auto min-h-screen bg-gray-50 pb-40 pt-8 px-4 font-sans selection:bg-blue-200">
                 <VisualCheck avatar={profile.avatarUrl} />
                 <ContactBox name={profile.patientName} contact={profile.emergencyContact} />
 
@@ -35,8 +35,16 @@ export default async function EmergencyPage({ params }: { params: Promise<{ shor
                 </div>
 
                 <ConditionBox items={profile.dangerousConditions} />
-                <SOSButton shortId={unwrappedParams.shortId} />
-                <DoctorLoginLink shortId={unwrappedParams.shortId} />
+
+                <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-gradient-to-t from-white via-white/90 to-transparent z-50 pointer-events-none">
+                    <div className="max-w-md mx-auto pointer-events-auto shadow-2xl rounded-3xl">
+                        <SOSButton shortId={unwrappedParams.shortId} />
+                    </div>
+                </div>
+
+                <div className="mt-12 text-center">
+                    <DoctorLoginLink shortId={unwrappedParams.shortId} />
+                </div>
             </main>
         </ClientGateWrapper>
     );

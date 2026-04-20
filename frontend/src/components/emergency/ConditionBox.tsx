@@ -1,19 +1,17 @@
-interface ConditionBoxProps {
-    items: string[];
-}
+import { Activity } from 'lucide-react';
 
-export default function ConditionBox({ items }: ConditionBoxProps) {
+export default function ConditionBox({ items }: { items: string[] }) {
     if (!items || items.length === 0) return null;
 
     return (
-        <div className="bg-amber-400 text-black rounded-2xl p-4 shadow-lg mt-4 border border-amber-500">
-            <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">⚠️</span>
-                <h3 className="font-black uppercase tracking-wider text-sm">Bệnh Nền Nghiêm Trọng</h3>
+        <div className="bg-sky-50 text-sky-900 rounded-3xl p-5 shadow-sm mt-4 border border-sky-100/50">
+            <div className="flex items-center gap-2 mb-3">
+                <Activity className="text-sky-500" size={18} strokeWidth={2.5} />
+                <h3 className="font-bold uppercase tracking-wider text-[10px] text-sky-600">Bệnh Nền Trọng Yếu</h3>
             </div>
-            <ul className="space-y-2 mt-3">
+            <ul className="flex flex-wrap gap-2">
                 {items.map((item, idx) => (
-                    <li key={idx} className="font-bold text-lg bg-amber-300 px-3 py-2 rounded-lg leading-tight">
+                    <li key={idx} className="font-bold text-sm bg-white border border-sky-100/80 px-3.5 py-2 rounded-xl text-sky-800 shadow-sm leading-none">
                         {item}
                     </li>
                 ))}

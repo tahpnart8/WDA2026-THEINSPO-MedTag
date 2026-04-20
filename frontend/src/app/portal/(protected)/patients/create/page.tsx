@@ -30,8 +30,9 @@ export default function CreatePatientPage() {
                 router.push('/portal/patients');
             } else {
                 const errorData = await res.json();
-                const errMsg = Array.isArray(errorData.message) ? errorData.message.join(', ') : errorData.message;
-                alert('Lỗi: ' + (errMsg || 'Lỗi không xác định'));
+                const actualError = errorData.error?.message || errorData.error || errorData.message;
+                const errMsg = Array.isArray(actualError) ? actualError.join(', ') : actualError;
+                alert('Lỗi: ' + (errMsg || 'Lỗi không xác định. Mã trạng thái: ' + res.status));
             }
         } catch (e) {
             console.error(e);

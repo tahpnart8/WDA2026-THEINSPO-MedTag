@@ -1,22 +1,20 @@
-interface AllergyBoxProps {
-    items: string[];
-}
+import { ShieldAlert } from 'lucide-react';
 
-export default function AllergyBox({ items }: AllergyBoxProps) {
+export default function AllergyBox({ items }: { items: string[] }) {
     return (
-        <div className="bg-red-600 text-white rounded-2xl p-4 shadow-lg min-h-32 border border-red-700">
-            <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">⛔</span>
-                <h3 className="font-bold uppercase tracking-wider text-sm">Dị Ứng</h3>
+        <div className="bg-orange-50/50 text-orange-800 rounded-3xl p-4 shadow-sm border border-orange-100 h-full flex flex-col justify-center">
+            <div className="flex items-center gap-1.5 mb-2 justify-center text-orange-600">
+                <ShieldAlert size={16} className="opacity-80" strokeWidth={2.5} />
+                <h3 className="font-bold uppercase tracking-wider text-[10px]">Dị Ứng</h3>
             </div>
             {items.length > 0 ? (
-                <ul className="list-disc list-inside text-lg font-bold leading-tight">
+                <ul className="text-center font-bold">
                     {items.map((item, idx) => (
-                        <li key={idx} className="mb-1">{item}</li>
+                        <li key={idx} className="leading-tight text-sm mb-1">{item}</li>
                     ))}
                 </ul>
             ) : (
-                <p className="text-red-200 italic font-medium">Không có dữ liệu</p>
+                <p className="text-orange-300 italic font-medium text-[11px] text-center">Không ghi nhận</p>
             )}
         </div>
     );

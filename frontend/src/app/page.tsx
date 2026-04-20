@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { HeartPulse, Settings } from 'lucide-react';
 
 export default function LandingPage() {
   const [shortId, setShortId] = useState('');
@@ -19,8 +20,8 @@ export default function LandingPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl" />
 
       <div className="max-w-md w-full bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white z-10 text-center animate-in slide-in-from-bottom-8 duration-700">
-        <div className="w-24 h-24 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-5xl font-black mb-6 mx-auto shadow-lg shadow-blue-600/30 rotate-3 transition-transform hover:rotate-0 hover:scale-105 cursor-default">
-          ✚
+        <div className="w-24 h-24 bg-blue-600 text-white rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-lg shadow-blue-600/30 rotate-3 transition-transform hover:rotate-0 hover:scale-105 cursor-default">
+          <HeartPulse size={48} strokeWidth={2.5} />
         </div>
         <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tighter">MedTag<span className="text-blue-600">.vn</span></h1>
         <p className="text-gray-500 font-medium text-lg leading-snug mb-8">Hệ thống nhận diện y tế<br />& cấp cứu mã nguồn mở</p>
@@ -45,8 +46,8 @@ export default function LandingPage() {
       </div>
 
       <div className="absolute bottom-8 text-center w-full z-10 flex flex-col items-center">
-        <a href="/portal/login" className="text-sm font-semibold text-gray-500 hover:text-blue-700 transition-colors bg-white/70 backdrop-blur-md px-5 py-2.5 rounded-full border border-gray-200 shadow-sm active:bg-gray-100">
-          ⚙️ Đăng nhập Quản trị viên
+        <a href="/portal/login" className="text-sm font-semibold text-gray-500 hover:text-blue-700 transition-colors bg-white/70 backdrop-blur-md px-5 py-2.5 rounded-full border border-gray-200 shadow-sm active:bg-gray-100 flex items-center gap-2">
+          <Settings size={16} /> Đăng nhập Quản trị viên
         </a>
       </div>
     </main>

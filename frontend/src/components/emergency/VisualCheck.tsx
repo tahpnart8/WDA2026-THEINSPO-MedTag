@@ -1,21 +1,18 @@
 import Image from 'next/image';
+import { UserCheck } from 'lucide-react';
 
-interface VisualCheckProps {
-    avatar: string | null;
-}
-
-export default function VisualCheck({ avatar }: VisualCheckProps) {
+export default function VisualCheck({ avatar }: { avatar: string | null }) {
     return (
         <div className="flex flex-col items-center mb-6">
-            <div className="w-48 h-48 rounded-3xl border-4 border-white shadow-xl overflow-hidden relative bg-gray-200 flex items-center justify-center">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-[3px] border-white shadow-sm overflow-hidden relative bg-blue-50 flex items-center justify-center">
                 {avatar ? (
                     <Image src={avatar} alt="Patient avatar" fill className="object-cover" />
                 ) : (
-                    <span className="text-gray-400 text-6xl">👤</span>
+                    <UserCheck className="text-blue-300 w-12 h-12" strokeWidth={1.5} />
                 )}
             </div>
-            <div className="mt-3 bg-black text-white px-4 py-1 rounded-full text-sm font-bold tracking-widest shadow-md">
-                ĐỐI CHIẾU KHUÔN MẶT
+            <div className="mt-[-12px] z-10 bg-white text-blue-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border border-blue-100 flex items-center gap-1.5">
+                <UserCheck size={14} strokeWidth={2.5} /> XÁC TÍN
             </div>
         </div>
     );

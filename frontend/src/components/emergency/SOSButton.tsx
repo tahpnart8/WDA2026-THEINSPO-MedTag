@@ -1,12 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { triggerSOS } from '@/lib/api';
+import { Siren, X } from 'lucide-react';
 
-interface SOSButtonProps {
-    shortId: string;
-}
-
-export default function SOSButton({ shortId }: SOSButtonProps) {
+export default function SOSButton({ shortId }: { shortId: string }) {
     const [status, setStatus] = useState<'IDLE' | 'COUNTDOWN' | 'SUCCESS' | 'ERROR'>('IDLE');
     const [timeLeft, setTimeLeft] = useState(15);
     const [message, setMessage] = useState('');
@@ -40,20 +37,13 @@ export default function SOSButton({ shortId }: SOSButtonProps) {
 
     const executeSOS = () => {
         if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
-
         if (!navigator.geolocation) {
             sendSOSReq(undefined, undefined);
             return;
         }
-
         navigator.geolocation.getCurrentPosition(
-            (position) => {
-                sendSOSReq(position.coords.latitude, position.coords.longitude);
-            },
-            (error) => {
-                console.warn('Geolocation error:', error);
-                sendSOSReq(undefined, undefined);
-            },
+            (pos) => sendSOSReq(pos.coords.latitude, pos.coords.longitude),
+            () => sendSOSReq(undefined, undefined),
             { timeout: 5000, enableHighAccuracy: true }
         );
     };
@@ -66,62 +56,58 @@ export default function SOSButton({ shortId }: SOSButtonProps) {
             setMessage(res.message);
         } catch (err: any) {
             setStatus('ERROR');
-            setMessage(err.message || 'Lỗi khi gửi SOS');
+            setMessage(err.message || 'Lỗi gửi SOS');
         }
     };
 
     if (status === 'SUCCESS') {
         return (
-            <div className="bg-red-100 border-2 border-red-500 rounded-2xl p-6 mt-8 text-center animate-in zoom-in duration-300">
-                <span className="text-6xl mb-2 block animate-bounce">🚨</span>
-                <h3 className="text-2xl font-black text-red-700 mb-2">ĐÃ PHÁT TÍN HIỆU!</h3>
-                <p className="text-red-600 font-medium">{message}</p>
-                <p className="text-red-500 text-sm mt-3 font-semibold">Tọa độ GPS đã được gửi đến người thân.</p>
+            <div className="bg-red-50 border border-red-200 rounded-[28px] p-5 text-center animate-in zoom-in duration-300 shadow-sm w-full relative overflow-hidden">
+                <Siren className="mx-auto text-red-500 animate-pulse mb-2" size={32} />
+                <h3 className="text-xl font-black text-red-700 mb-1 tracking-tighter">ĐÃ PHÁT TÍN HIỆU!</h3>
+                <p className="text-red-500 text-xs font-semibold">Tọa độ đã gửi đến Guardian.</p>
             </div>
         );
     }
 
     if (status === 'COUNTDOWN') {
         return (
-            <div className="mt-8 flex flex-col items-center">
-                <div className="relative w-48 h-48 flex items-center justify-center">
-                    <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="#fee2e2" strokeWidth="8" />
-                        <circle
-                            cx="50" cy="50" r="45" fill="none" stroke="#ef4444" strokeWidth="8"
-                            strokeDasharray="283"
-                            strokeDashoffset={283 - (283 * (timeLeft / 15))}
-                            className="transition-all duration-1000 ease-linear"
-                        />
-                    </svg>
-                    <div className="text-center z-10 text-red-600">
-                        <span className="text-6xl font-black tabular-nums">{timeLeft}</span>
-                        <span className="block text-sm font-bold uppercase mt-1">GIÂY</span>
+            <div className="w-full bg-white rounded-[28px] border border-red-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-5 flex items-center justify-between animate-in slide-in-from-bottom-2">
+                <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full border-4 border-red-100 flex items-center justify-center bg-red-50">
+                        <span className="text-2xl font-black text-red-600 animate-pulse">{timeLeft}</span>
+                    </div>
+                    <div className="text-left">
+                        <p className="font-bold text-red-600 text-sm tracking-wide">ĐANG MỞ CẤP CỨU...</p>
+                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest mt-0.5">Hệ thống đang định vị GPS</p>
                     </div>
                 </div>
-
                 <button
                     onClick={cancelCountdown}
-                    className="mt-6 bg-gray-200 text-gray-700 font-bold px-8 py-4 rounded-full uppercase tracking-wider active:bg-gray-300 active:scale-95 transition-all text-xl shadow-sm"
+                    className="bg-gray-100 p-3 h-14 w-14 flex items-center justify-center rounded-full text-gray-600 hover:bg-gray-200 active:scale-95 transition-all outline-none"
                 >
-                    HỦY BỎ
+                    <X size={24} strokeWidth={3} />
                 </button>
             </div>
         );
     }
 
     return (
-        <div className="mt-8">
+        <div className="w-full">
             {status === 'ERROR' && (
-                <p className="text-red-600 text-center mb-4 font-bold bg-red-100 p-3 rounded-xl">{message}</p>
+                <p className="text-red-600 text-center mb-2 font-bold text-xs bg-red-50 p-2 rounded-xl">{message}</p>
             )}
             <button
                 onClick={startCountdown}
-                className="w-full bg-red-600 hover:bg-red-700 text-white rounded-3xl py-6 shadow-xl shadow-red-600/30 active:scale-[0.98] transition-all flex flex-col items-center border border-red-500"
+                className="w-full bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-[28px] p-5 shadow-[0_8px_30px_rgba(239,68,68,0.3)] active:scale-[0.98] transition-transform flex items-center justify-center gap-4 border border-red-600/50"
             >
-                <span className="text-5xl mb-2">🆘</span>
-                <span className="text-4xl font-black tracking-widest">CẤP CỨU</span>
-                <span className="text-red-200 text-sm mt-3 font-medium">Sẽ đếm ngược 15 giây trước khi gửi</span>
+                <div className="bg-white/20 p-2.5 rounded-full">
+                    <Siren size={28} className="animate-pulse" />
+                </div>
+                <div className="text-left">
+                    <span className="block text-2xl font-black tracking-widest leading-none">CẤP CỨU</span>
+                    <span className="block text-red-100 text-[10px] uppercase font-bold tracking-widest mt-1 opacity-90">Gọi người thân lập tức</span>
+                </div>
             </button>
         </div>
     );

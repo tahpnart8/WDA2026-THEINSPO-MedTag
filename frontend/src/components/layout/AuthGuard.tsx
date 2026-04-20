@@ -18,7 +18,16 @@ export default function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     useEffect(() => {
         if (!isLoading) {
             if (!isAuthenticated) {
-                router.replace('/portal/login');
+                if (requiredRole === 'DOCTOR') {
+                    // Nếu ở trang bác sĩ mà yêu cầu đăng nhập, giữ lại shortId nếu có
+                    const params = new URLSearchParams();
+                    if (pathname.startsWith('/medical/') && pathname !== '/medical/login') {
+                        params.set('redirect', pathname);
+                    }
+                    router.replace('/medical/login?' + params.toString());
+                } else {
+                    router.replace('/portal/login');
+                }
             } else if (requiredRole && user?.role !== requiredRole) {
                 router.replace('/');
             } else {

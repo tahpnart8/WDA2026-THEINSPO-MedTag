@@ -1,18 +1,10 @@
 import Link from 'next/link';
+import { Stethoscope } from 'lucide-react';
 
-interface DoctorLoginLinkProps {
-    shortId: string;
-}
-
-export default function DoctorLoginLink({ shortId }: DoctorLoginLinkProps) {
+export default function DoctorLoginLink({ shortId }: { shortId: string }) {
     return (
-        <div className="mt-8 flex justify-center pb-8 border-t border-gray-200 pt-6">
-            <Link
-                href={`/medical/login?shortId=${shortId}`}
-                className="text-gray-600 text-sm font-semibold hover:text-blue-700 flex items-center gap-2 transition-colors border-2 border-gray-200 rounded-full px-5 py-2.5 bg-white shadow-sm active:bg-gray-50"
-            >
-                <span className="text-lg">🏥</span> Đăng nhập Y Tế Đặc Quyền
-            </Link>
-        </div>
+        <Link href={`/medical/login?redirect=/medical/${shortId}`} className="inline-flex items-center justify-center gap-2 font-bold text-blue-600 text-xs bg-blue-50 px-5 py-3 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors shadow-sm tracking-wide">
+            <Stethoscope size={16} strokeWidth={2.5} /> Luồng Y Tế Đặc Quyền
+        </Link>
     );
 }

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { fetchWithAuth } from '@/lib/auth';
 import Link from 'next/link';
+import { Users, Smartphone, Siren, Plus, Link2 } from 'lucide-react';
 
 export default function DashboardOverview() {
     const { user } = useAuth();
@@ -36,43 +37,51 @@ export default function DashboardOverview() {
 
     return (
         <div className="animate-in fade-in duration-500 pb-10">
-            <h1 className="text-3xl font-black text-gray-900 mb-2">Xin chào, {user?.fullName}! 👋</h1>
-            <p className="text-gray-500 font-medium mb-8">Tổng quan về hệ thống thiết bị và hồ sơ bệnh nhân.</p>
+            <div className="mb-8">
+                <h1 className="text-2xl font-black text-slate-800 mb-1">Xin chào, {user?.fullName}! 👋</h1>
+                <p className="text-slate-500 font-medium text-sm">Tổng quan Guardian Dashboard</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-gray-500 font-bold text-sm mb-1 uppercase tracking-wider">Hồ sơ y tế</p>
-                        <h3 className="text-4xl font-black text-gray-900">{isLoading ? '...' : stats.totalRecords}</h3>
+            <div className="flex flex-col gap-4 mb-8">
+                <div className="bg-white p-5 rounded-[2rem] border border-blue-50 shadow-sm flex items-center gap-5">
+                    <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
+                        <Users size={28} strokeWidth={2.5} />
                     </div>
-                    <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl">👤</div>
+                    <div>
+                        <p className="text-slate-400 font-bold text-[10px] mb-0.5 uppercase tracking-widest">Hồ sơ y tế</p>
+                        <h3 className="text-3xl font-black text-slate-800 tracking-tighter">{isLoading ? '-' : stats.totalRecords}</h3>
+                    </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-gray-500 font-bold text-sm mb-1 uppercase tracking-wider">Thiết bị liên kết</p>
-                        <h3 className="text-4xl font-black text-gray-900">{isLoading ? '...' : stats.totalDevices}</h3>
+                <div className="bg-white p-5 rounded-[2rem] border border-emerald-50 shadow-sm flex items-center gap-5">
+                    <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0">
+                        <Smartphone size={28} strokeWidth={2.5} />
                     </div>
-                    <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-3xl">📱</div>
+                    <div>
+                        <p className="text-slate-400 font-bold text-[10px] mb-0.5 uppercase tracking-widest">Thiết bị liên kết</p>
+                        <h3 className="text-3xl font-black text-slate-800 tracking-tighter">{isLoading ? '-' : stats.totalDevices}</h3>
+                    </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-gray-500 font-bold text-sm mb-1 uppercase tracking-wider">Sự cố SOS (Lịch sử)</p>
-                        <h3 className="text-4xl font-black text-gray-900">{isLoading ? '...' : stats.totalSOS}</h3>
+                <div className="bg-white p-5 rounded-[2rem] border border-red-50 shadow-sm flex items-center gap-5">
+                    <div className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shrink-0">
+                        <Siren size={28} strokeWidth={2.5} className="animate-pulse" />
                     </div>
-                    <div className="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center text-3xl">🚨</div>
+                    <div>
+                        <p className="text-slate-400 font-bold text-[10px] mb-0.5 uppercase tracking-widest">Sự cố khẩn cấp (SOS)</p>
+                        <h3 className="text-3xl font-black text-slate-800 tracking-tighter">{isLoading ? '-' : stats.totalSOS}</h3>
+                    </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden p-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Thao tác nhanh</h2>
-                <div className="flex flex-wrap gap-4">
-                    <Link href="/portal/patients/create" className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition">
-                        + Thêm hồ sơ mới
+            <div className="bg-white rounded-[2rem] border border-blue-50 shadow-sm p-6 mb-4">
+                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Thao tác nhanh</h2>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <Link href="/portal/patients/create" className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:bg-blue-700 transition active:scale-[0.98]">
+                        <Plus size={20} strokeWidth={2.5} /> Thêm Hồ Sơ Mới
                     </Link>
-                    <Link href="/portal/devices" className="px-6 py-3 bg-gray-100 text-gray-800 font-bold rounded-xl hover:bg-gray-200 transition">
-                        🔗 Quản lý thiết bị
+                    <Link href="/portal/devices" className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-50 text-slate-700 font-bold rounded-2xl hover:bg-slate-100 transition active:scale-[0.98]">
+                        <Link2 size={20} strokeWidth={2.5} /> Ghép Thiết Bị
                     </Link>
                 </div>
             </div>
