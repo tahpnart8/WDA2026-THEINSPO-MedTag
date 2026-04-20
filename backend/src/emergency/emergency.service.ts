@@ -1,14 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BloodType } from '@prisma/client';
 import { TriggerSosDto } from './dto/trigger-sos.dto';
 import { NotificationService } from '../notification/notification.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class EmergencyService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly notification: NotificationService
+        private readonly notification: NotificationService,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache
     ) { }
 
     private bloodTypeDisplay(bt: BloodType): string {
@@ -23,6 +26,11 @@ export class EmergencyService {
     }
 
     async getPublicProfile(shortId: string) {
+        // Try to get from cache first
+        const cacheKey = `emergency_profile:${shortId}`;
+        const cachedData = await this.cacheManager.get(cacheKey);
+        if (cachedData) return cachedData;
+
         const device = await this.prisma.device.findUnique({
             where: { shortId },
             include: {
@@ -38,7 +46,7 @@ export class EmergencyService {
 
         const mr = device.medicalRecord;
 
-        return {
+        const profile = {
             deviceId: device.id,
             patientName: mr.patientName,
             dateOfBirth: mr.dateOfBirth?.toISOString().split('T')[0] || null,
@@ -55,6 +63,11 @@ export class EmergencyService {
             dataFreshness: mr.dataFreshnessStatus,
             lastConfirmed: mr.dataConfirmedAt,
         };
+
+        // Save to cache for 10 minutes
+        await this.cacheManager.set(cacheKey, profile, 600 * 1000);
+
+        return profile;
     }
 
     async triggerSOS(shortId: string, dto: TriggerSosDto, ip: string, ua: string) {

@@ -69,6 +69,11 @@ export class PortalController {
         return { success: true };
     }
 
+    @Get('devices/:id/qr')
+    async getDeviceQR(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+        return this.portalService.getDeviceQR(user.id, id);
+    }
+
     @Get('emergency-logs')
     async getLogs(@CurrentUser() user: RequestUser, @Query() query: QueryParamsDto) {
         return this.portalService.getEmergencyLogs(user.id, query);

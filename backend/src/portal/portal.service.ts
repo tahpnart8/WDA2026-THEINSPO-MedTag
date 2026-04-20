@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CryptoService } from '../crypto/crypto.service';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
@@ -6,13 +6,26 @@ import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { QueryParamsDto } from './dto/query-params.dto';
 import { EmergencyStatus, Prisma } from '@prisma/client';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import * as QRCode from 'qrcode';
 
 @Injectable()
 export class PortalService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly crypto: CryptoService,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache
     ) { }
+
+    private async invalidateRecordCache(recordId: string) {
+        const devices = await this.prisma.device.findMany({
+            where: { medicalRecordId: recordId }
+        });
+        for (const device of devices) {
+            await this.cacheManager.del(`emergency_profile:${device.shortId}`);
+        }
+    }
 
     async getMyRecords(userId: string) {
         return this.prisma.medicalRecord.findMany({
@@ -81,7 +94,7 @@ export class PortalService {
             encryptedData = this.crypto.encrypt(JSON.stringify(dto.detailedMedicalData));
         }
 
-        return this.prisma.medicalRecord.update({
+        const updated = await this.prisma.medicalRecord.update({
             where: { id: recordId },
             data: {
                 patientName: dto.patientName !== undefined ? dto.patientName : record.patientName,
@@ -95,6 +108,9 @@ export class PortalService {
                 encryptedMedicalData: encryptedData,
             },
         });
+
+        await this.invalidateRecordCache(recordId);
+        return updated;
     }
 
     async deleteRecord(userId: string, recordId: string) {
@@ -102,6 +118,7 @@ export class PortalService {
         if (!record) throw new NotFoundException('Hồ sơ không tồn tại.');
         if (record.guardianId !== userId) throw new ForbiddenException('Không có quyền xóa hồ sơ này.');
 
+        await this.invalidateRecordCache(recordId);
         await this.prisma.medicalRecord.delete({ where: { id: recordId } });
     }
 
@@ -110,13 +127,16 @@ export class PortalService {
         if (!record) throw new NotFoundException('Hồ sơ không tồn tại.');
         if (record.guardianId !== userId) throw new ForbiddenException('Không có quyền thao tác hồ sơ này.');
 
-        return this.prisma.medicalRecord.update({
+        const updated = await this.prisma.medicalRecord.update({
             where: { id: recordId },
             data: {
                 dataFreshnessStatus: 'FRESH',
                 dataConfirmedAt: new Date(),
             },
         });
+
+        await this.invalidateRecordCache(recordId);
+        return updated;
     }
 
     async getMyDevices(userId: string, medicalRecordId?: string) {
@@ -140,18 +160,21 @@ export class PortalService {
         if (!record) throw new NotFoundException('Hồ sơ không tồn tại.');
         if (record.guardianId !== userId) throw new ForbiddenException('Không có quyền liên kết tới hồ sơ này.');
 
-        const existing = await this.prisma.device.findUnique({ where: { shortId: dto.shortId } });
+        const existing = await this.prisma.device.findUnique({ where: { shortId: dto.shortId.toUpperCase() } });
         if (existing) throw new BadRequestException('Mã thiết bị này đã được đăng ký.');
 
-        return this.prisma.device.create({
+        const device = await this.prisma.device.create({
             data: {
-                shortId: dto.shortId,
-                qrCode: dto.qrCode || `https://medtag.vercel.app/e/${dto.shortId}`,
+                shortId: dto.shortId.toUpperCase(),
+                qrCode: dto.qrCode || `https://medtag.vercel.app/e/${dto.shortId.toUpperCase()}`,
                 label: dto.label || null,
                 medicalRecordId: dto.medicalRecordId,
                 isActive: true
             }
         });
+
+        await this.cacheManager.del(`emergency_profile:${device.shortId}`);
+        return device;
     }
 
     async unlinkDevice(userId: string, deviceId: string) {
@@ -163,7 +186,30 @@ export class PortalService {
         if (!device) throw new NotFoundException('Thiết bị không tồn tại.');
         if (device.medicalRecord.guardianId !== userId) throw new ForbiddenException('Không có quyền xóa thiết bị này.');
 
+        await this.cacheManager.del(`emergency_profile:${device.shortId}`);
         return this.prisma.device.delete({ where: { id: deviceId } });
+    }
+
+    async getDeviceQR(userId: string, deviceId: string) {
+        const device = await this.prisma.device.findUnique({
+            where: { id: deviceId },
+            include: { medicalRecord: true }
+        });
+
+        if (!device) throw new NotFoundException('Thiết bị không tồn tại.');
+        if (device.medicalRecord.guardianId !== userId) throw new ForbiddenException('Không có quyền truy cập thiết bị này.');
+
+        const qrDataUrl = await QRCode.toDataURL(device.qrCode, {
+            errorCorrectionLevel: 'H',
+            margin: 1,
+            width: 512,
+        });
+
+        return {
+            qrDataUrl,
+            shortId: device.shortId,
+            patientName: device.medicalRecord.patientName
+        };
     }
 
     async getEmergencyLogs(userId: string, query: QueryParamsDto) {
