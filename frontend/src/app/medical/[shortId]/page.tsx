@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react';
 import { fetchWithAuth } from '@/lib/auth';
 import AuthGuard from '@/components/layout/AuthGuard';
 import { FreshnessFlag, MedicalHistory, MedicationList, Contraindications, LabResults } from '@/components/medical/MedicalComponents';
-import { Stethoscope, ShieldCheck, UserCircle, Phone, LockKeyhole, SearchX, Loader2 } from 'lucide-react';
+import { Stethoscope, ShieldCheck, UserCircle, Phone, LockKeyhole, SearchX, Loader2, LogOut } from 'lucide-react';
 
 function DoctorDashboardContent({ shortId }: { shortId: string }) {
-    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
     const [record, setRecord] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -73,14 +73,18 @@ function DoctorDashboardContent({ shortId }: { shortId: string }) {
                             </p>
                         </div>
                     </div>
-                    <div className="text-right flex items-center gap-3">
+                    <div className="text-right flex items-center gap-4">
                         <div className="hidden sm:block text-right">
                             <p className="text-sm font-black text-white">BS. {user?.fullName}</p>
                             <p className="text-[10px] text-blue-200 uppercase font-bold tracking-widest">MÃ NV: {user?.id.split('-')[0]}</p>
                         </div>
-                        <div className="w-10 h-10 bg-blue-700/50 rounded-xl flex items-center justify-center border border-blue-500 font-bold text-white shadow-inner">
-                            BS
-                        </div>
+                        <button
+                            onClick={logout}
+                            className="w-10 h-10 bg-red-500 hover:bg-red-600 rounded-xl flex items-center justify-center border border-red-400 font-bold text-white shadow-lg transition-all active:scale-95"
+                            title="Đăng xuất"
+                        >
+                            <LogOut size={18} />
+                        </button>
                     </div>
                 </div>
             </header>

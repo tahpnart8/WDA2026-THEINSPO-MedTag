@@ -13,28 +13,32 @@ export default function AntiSpamGate({ onVerified }: AntiSpamGateProps) {
     const INTERVAL = 50;
 
     useEffect(() => {
-        if (isPressing) {
+        if (isPressing && progress < 100) {
             pressTimer.current = setInterval(() => {
                 setProgress((prev) => {
                     const next = prev + (INTERVAL / HOLD_TIME) * 100;
-                    if (next >= 100) {
-                        clearInterval(pressTimer.current!);
-                        setIsPressing(false);
-                        onVerified();
-                        return 100;
-                    }
-                    return next;
+                    return next >= 100 ? 100 : next;
                 });
             }, INTERVAL);
         } else {
             if (pressTimer.current) clearInterval(pressTimer.current);
-            setProgress(0);
+            if (!isPressing && progress < 100) {
+                setProgress(0);
+            }
         }
 
         return () => {
             if (pressTimer.current) clearInterval(pressTimer.current);
         };
-    }, [isPressing, onVerified]);
+    }, [isPressing, progress]);
+
+    useEffect(() => {
+        if (progress >= 100) {
+            setIsPressing(false);
+            if (pressTimer.current) clearInterval(pressTimer.current);
+            onVerified();
+        }
+    }, [progress, onVerified]);
 
     return (
         <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center px-6 text-center animate-in fade-in zoom-in-95 duration-500">
@@ -49,13 +53,13 @@ export default function AntiSpamGate({ onVerified }: AntiSpamGateProps) {
                     )}
                 </div>
             </div>
-            
+
             <h1 className="text-4xl font-black mb-4 tracking-tighter">
                 <span className="text-blue-600">Med</span>
                 <span className="text-yellow-400">Tag</span>
                 <span className="text-slate-900 ml-2">EMERGENCY</span>
             </h1>
-            
+
             <p className="text-lg text-slate-500 mb-12 font-bold max-w-sm leading-relaxed uppercase tracking-tight">
                 Xác nhận quyền truy cập.<br />
                 <span className="text-slate-400 text-sm font-medium normal-case tracking-normal">Nhấn và giữ nút bên dưới để mở khóa hồ sơ y tế.</span>
@@ -94,7 +98,7 @@ export default function AntiSpamGate({ onVerified }: AntiSpamGateProps) {
                     </span>
                 </div>
             </button>
-            
+
             <div className="absolute bottom-10 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
                 Protected by MedTag Security Layer
             </div>

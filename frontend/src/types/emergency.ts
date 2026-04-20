@@ -16,6 +16,7 @@ export interface EmergencyProfile {
     emergencyContact: EmergencyContact;
     dataFreshness: 'FRESH' | 'STALE' | 'EXPIRED';
     lastConfirmed: string;
+    notes: string | null;
 }
 
 export interface SOSResponse {

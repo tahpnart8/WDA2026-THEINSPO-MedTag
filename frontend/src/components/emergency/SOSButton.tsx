@@ -106,7 +106,7 @@ export default function SOSButton({ shortId }: { shortId: string }) {
                 </div>
                 <div className="text-left">
                     <span className="block text-2xl font-black tracking-widest leading-none">CẤP CỨU</span>
-                    <span className="block text-red-100 text-[10px] uppercase font-bold tracking-widest mt-1 opacity-90">Gọi người thân lập tức</span>
+                    <span className="block text-red-100 text-[10px] uppercase font-bold tracking-widest mt-1 opacity-90">Gọi xe cấp cứu lập tức</span>
                 </div>
             </button>
         </div>
