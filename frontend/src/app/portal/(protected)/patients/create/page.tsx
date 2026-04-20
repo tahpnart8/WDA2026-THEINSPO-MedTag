@@ -12,9 +12,11 @@ export default function CreatePatientPage() {
         emergencyPhone: '',
         emergencyContactName: '',
         notes: '',
+        dateOfBirth: '',
         allergies: '',
         dangerousConditions: '',
         avatarUrl: '',
+        gender: 'MALE',
     });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -76,23 +78,39 @@ export default function CreatePatientPage() {
                             />
                         </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Họ Tên Bệnh Nhân *</label>
-                        <input type="text" required value={formData.patientName} onChange={e => setFormData({ ...formData, patientName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400" placeholder="Tên bệnh nhân/người cao tuổi" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Họ Tên Bệnh Nhân *</label>
+                            <input type="text" required value={formData.patientName} onChange={e => setFormData({ ...formData, patientName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400" placeholder="Tên bệnh nhân/người cao tuổi" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Ngày Sinh</label>
+                            <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all" />
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Nhóm Máu</label>
-                        <select value={formData.bloodType} onChange={e => setFormData({ ...formData, bloodType: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none hover:bg-gray-50 transition-colors cursor-pointer">
-                            <option value="UNKNOWN">Chưa Rõ</option>
-                            <option value="O_POSITIVE">O+</option>
-                            <option value="O_NEGATIVE">O-</option>
-                            <option value="A_POSITIVE">A+</option>
-                            <option value="A_NEGATIVE">A-</option>
-                            <option value="B_POSITIVE">B+</option>
-                            <option value="B_NEGATIVE">B-</option>
-                            <option value="AB_POSITIVE">AB+</option>
-                            <option value="AB_NEGATIVE">AB-</option>
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Giới Tính</label>
+                            <select value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none hover:bg-gray-50 transition-colors cursor-pointer">
+                                <option value="MALE">Nam</option>
+                                <option value="FEMALE">Nữ</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Nhóm Máu</label>
+                            <select value={formData.bloodType} onChange={e => setFormData({ ...formData, bloodType: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none hover:bg-gray-50 transition-colors cursor-pointer">
+                                <option value="UNKNOWN">Chưa Rõ</option>
+                                <option value="O_POSITIVE">O+</option>
+                                <option value="O_NEGATIVE">O-</option>
+                                <option value="A_POSITIVE">A+</option>
+                                <option value="A_NEGATIVE">A-</option>
+                                <option value="B_POSITIVE">B+</option>
+                                <option value="B_NEGATIVE">B-</option>
+                                <option value="AB_POSITIVE">AB+</option>
+                                <option value="AB_NEGATIVE">AB-</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>

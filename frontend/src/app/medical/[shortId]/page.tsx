@@ -63,13 +63,16 @@ function DoctorDashboardContent({ shortId }: { shortId: string }) {
             <header className="bg-blue-600 text-white sticky top-0 z-10 shadow-md">
                 <div className="max-w-6xl mx-auto px-4 py-4 sm:px-6 flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-                            <Stethoscope size={20} className="text-white" />
+                        <div className="w-10 h-10 flex items-center justify-center">
+                            <img src="/logo.png" alt="MedTag Logo" className="w-full h-full object-contain" />
                         </div>
                         <div>
-                            <h1 className="font-black tracking-tight text-lg leading-tight">Y Tế Đặc Quyền</h1>
+                            <h1 className="font-black tracking-tighter text-lg leading-tight uppercase">
+                                <span className="text-yellow-400">Med</span>
+                                <span className="text-white">Tag</span>
+                            </h1>
                             <p className="text-[9px] text-blue-200 font-mono tracking-widest uppercase flex items-center gap-1">
-                                <LockKeyhole size={10} /> AES-256 SECURED
+                                <LockKeyhole size={10} /> DOCTOR PORTAL
                             </p>
                         </div>
                     </div>

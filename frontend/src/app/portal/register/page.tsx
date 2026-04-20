@@ -51,11 +51,15 @@ export default function RegisterPage() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50/50 px-4 py-8 fill-mode-both animate-in fade-in duration-500">
             <div className="max-w-md w-full bg-white p-8 rounded-[2rem] border border-blue-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative z-10">
                 <div className="text-center mb-8">
-                    <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-[1.5rem] flex items-center justify-center mb-6 mx-auto shadow-sm border border-blue-100/50">
-                        <HeartPulse size={40} strokeWidth={2.5} />
+                    <div className="w-20 h-20 bg-white rounded-[1.5rem] flex items-center justify-center mb-4 mx-auto shadow-sm border border-blue-100/50 overflow-hidden">
+                        <img src="/logo.png" alt="MedTag Logo" className="w-full h-full object-contain p-1" />
                     </div>
-                    <h2 className="text-3xl font-black text-slate-800 mb-2 tracking-tighter">Đăng Ký Mới</h2>
-                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Hệ thống Guardian</p>
+                    <h1 className="text-2xl font-black mb-4 tracking-tighter uppercase">
+                        <span className="text-yellow-400">Med</span>
+                        <span className="text-blue-600">Tag</span>
+                    </h1>
+                    <h2 className="text-xl font-bold text-slate-800 mb-1 tracking-tight">Đăng Ký Mới</h2>
+                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Hệ thống Guardian</p>
                 </div>
 
                 {error && (

@@ -54,9 +54,9 @@ export default function AntiSpamGate({ onVerified }: AntiSpamGateProps) {
                 </div>
             </div>
 
-            <h1 className="text-4xl font-black mb-4 tracking-tighter">
-                <span className="text-blue-600">Med</span>
-                <span className="text-yellow-400">Tag</span>
+            <h1 className="text-4xl font-black mb-4 tracking-tighter uppercase">
+                <span className="text-yellow-400">Med</span>
+                <span className="text-blue-600">Tag</span>
                 <span className="text-slate-900 ml-2">EMERGENCY</span>
             </h1>
 

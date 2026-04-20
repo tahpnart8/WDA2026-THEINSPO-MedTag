@@ -17,9 +17,11 @@ export default function EditPatientPage() {
         emergencyPhone: '',
         emergencyContactName: '',
         notes: '',
+        dateOfBirth: '',
         allergies: '',
         dangerousConditions: '',
         avatarUrl: '',
+        gender: 'MALE',
     });
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -40,6 +42,8 @@ export default function EditPatientPage() {
                         allergies: Array.isArray(data.allergies) ? data.allergies.join(', ') : '',
                         dangerousConditions: Array.isArray(data.dangerousConditions) ? data.dangerousConditions.join(', ') : '',
                         avatarUrl: data.avatarUrl || '',
+                        gender: data.gender || 'MALE',
+                        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : '',
                     });
                 } else {
                     toast.error('Không thể tải hồ sơ');
@@ -152,23 +156,39 @@ export default function EditPatientPage() {
                             />
                         </div>
                     </div>
-                    <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Họ Tên Bệnh Nhân *</label>
-                        <input type="text" required value={formData.patientName} onChange={e => setFormData({ ...formData, patientName: e.target.value })} className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-slate-700" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Họ Tên Bệnh Nhân *</label>
+                            <input type="text" required value={formData.patientName} onChange={e => setFormData({ ...formData, patientName: e.target.value })} className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-slate-700" />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Ngày Sinh</label>
+                            <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })} className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-slate-700" />
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Nhóm Máu</label>
-                        <select value={formData.bloodType} onChange={e => setFormData({ ...formData, bloodType: e.target.value })} className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none hover:bg-slate-50 transition-colors cursor-pointer font-bold text-slate-700">
-                            <option value="UNKNOWN">Chưa Rõ</option>
-                            <option value="O_POSITIVE">O+</option>
-                            <option value="O_NEGATIVE">O-</option>
-                            <option value="A_POSITIVE">A+</option>
-                            <option value="A_NEGATIVE">A-</option>
-                            <option value="B_POSITIVE">B+</option>
-                            <option value="B_NEGATIVE">B-</option>
-                            <option value="AB_POSITIVE">AB+</option>
-                            <option value="AB_NEGATIVE">AB-</option>
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Giới Tính</label>
+                            <select value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })} className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none hover:bg-slate-50 transition-colors cursor-pointer font-bold text-slate-700">
+                                <option value="MALE">Nam</option>
+                                <option value="FEMALE">Nữ</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Nhóm Máu</label>
+                            <select value={formData.bloodType} onChange={e => setFormData({ ...formData, bloodType: e.target.value })} className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none hover:bg-slate-50 transition-colors cursor-pointer font-bold text-slate-700">
+                                <option value="UNKNOWN">Chưa Rõ</option>
+                                <option value="O_POSITIVE">O+</option>
+                                <option value="O_NEGATIVE">O-</option>
+                                <option value="A_POSITIVE">A+</option>
+                                <option value="A_NEGATIVE">A-</option>
+                                <option value="B_POSITIVE">B+</option>
+                                <option value="B_NEGATIVE">B-</option>
+                                <option value="AB_POSITIVE">AB+</option>
+                                <option value="AB_NEGATIVE">AB-</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
