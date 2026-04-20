@@ -200,7 +200,7 @@ export default function DevicesPage() {
                             <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 mb-8 inline-block shadow-inner">
                                 <QRCodeSVG
                                     id="qr-code-svg"
-                                    value={selectedDevice.qrCode || `https://medtag.vercel.app/e/${selectedDevice.shortId}`}
+                                    value={selectedDevice.qrCode || `https://medtag-by-theinspo.vercel.app/e/${selectedDevice.shortId}`}
                                     size={180}
                                     level="H"
                                     includeMargin={false}

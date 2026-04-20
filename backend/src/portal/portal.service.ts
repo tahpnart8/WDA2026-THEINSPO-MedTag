@@ -167,7 +167,7 @@ export class PortalService {
             if (existing) throw new BadRequestException('Mã thiết bị này đã được đăng ký.');
         }
 
-        const baseUrl = process.env.FRONTEND_URL || 'https://medtag.vercel.app';
+        const baseUrl = process.env.FRONTEND_URL || 'https://medtag-by-theinspo.vercel.app';
 
         return this.prisma.device.create({
             data: {
