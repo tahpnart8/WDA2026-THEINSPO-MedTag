@@ -14,6 +14,16 @@ export class PortalService {
         private readonly crypto: CryptoService,
     ) { }
 
+    private generateShortId(): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+
     async getMyRecords(userId: string) {
         return this.prisma.medicalRecord.findMany({
             where: { guardianId: userId },
@@ -144,13 +154,25 @@ export class PortalService {
         if (!record) throw new NotFoundException('Hồ sơ không tồn tại.');
         if (record.guardianId !== userId) throw new ForbiddenException('Không có quyền liên kết tới hồ sơ này.');
 
-        const existing = await this.prisma.device.findUnique({ where: { shortId: dto.shortId } });
-        if (existing) throw new BadRequestException('Mã thiết bị này đã được đăng ký.');
+        let shortId = dto.shortId?.toUpperCase();
+        if (!shortId) {
+            let isUnique = false;
+            while (!isUnique) {
+                shortId = this.generateShortId();
+                const existing = await this.prisma.device.findUnique({ where: { shortId } });
+                if (!existing) isUnique = true;
+            }
+        } else {
+            const existing = await this.prisma.device.findUnique({ where: { shortId } });
+            if (existing) throw new BadRequestException('Mã thiết bị này đã được đăng ký.');
+        }
+
+        const baseUrl = process.env.FRONTEND_URL || 'https://medtag.vercel.app';
 
         return this.prisma.device.create({
             data: {
-                shortId: dto.shortId,
-                qrCode: dto.qrCode || `https://medtag.vercel.app/e/${dto.shortId}`,
+                shortId,
+                qrCode: dto.qrCode || `${baseUrl}/e/${shortId}`,
                 label: dto.label || null,
                 medicalRecordId: dto.medicalRecordId,
                 isActive: true
