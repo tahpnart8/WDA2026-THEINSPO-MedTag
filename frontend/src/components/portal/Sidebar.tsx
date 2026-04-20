@@ -17,10 +17,13 @@ export default function Sidebar() {
     return (
         <aside className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed left-0 top-0 hidden md:flex">
             <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center text-xl font-black shadow-md">
-                    ✚
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden border border-gray-100">
+                    <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-0.5" />
                 </div>
-                <h1 className="text-2xl font-black text-gray-900 tracking-tighter">MedTag<span className="text-blue-600">.vn</span></h1>
+                <h1 className="text-2xl font-black tracking-tighter">
+                    <span className="text-blue-600">Med</span>
+                    <span className="text-yellow-400">Tag</span>
+                </h1>
             </div>
 
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
