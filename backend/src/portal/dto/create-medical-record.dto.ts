@@ -39,4 +39,12 @@ export class CreateMedicalRecordDto {
     @IsOptional()
     @IsObject()
     detailedMedicalData?: Record<string, any>;
+
+    @IsOptional()
+    @IsString()
+    notes?: string;
+
+    @IsOptional()
+    @IsString()
+    avatarUrl?: string;
 }

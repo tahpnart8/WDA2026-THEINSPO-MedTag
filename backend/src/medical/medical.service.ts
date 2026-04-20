@@ -53,6 +53,7 @@ export class MedicalService {
                     name: mr.emergencyContactName || mr.guardian.fullName,
                     phone: mr.emergencyPhone || mr.guardian.phoneNumber,
                 },
+                notes: mr.notes,
             },
             decryptedMedicalData,
             dataFreshness: {

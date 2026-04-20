@@ -66,6 +66,8 @@ export class PortalService {
                 dangerousConditions: (dto.dangerousConditions || []) as any,
                 emergencyPhone: dto.emergencyPhone || null,
                 emergencyContactName: dto.emergencyContactName || null,
+                notes: dto.notes || null,
+                avatarUrl: dto.avatarUrl || null,
                 encryptedMedicalData: encryptedData,
             },
         });
@@ -92,6 +94,8 @@ export class PortalService {
                 dangerousConditions: dto.dangerousConditions !== undefined ? (dto.dangerousConditions as any) : record.dangerousConditions,
                 emergencyPhone: dto.emergencyPhone !== undefined ? dto.emergencyPhone : record.emergencyPhone,
                 emergencyContactName: dto.emergencyContactName !== undefined ? dto.emergencyContactName : record.emergencyContactName,
+                notes: dto.notes !== undefined ? dto.notes : record.notes,
+                avatarUrl: dto.avatarUrl !== undefined ? dto.avatarUrl : record.avatarUrl,
                 encryptedMedicalData: encryptedData,
             },
         });

@@ -54,6 +54,7 @@ export class EmergencyService {
             },
             dataFreshness: mr.dataFreshnessStatus,
             lastConfirmed: mr.dataConfirmedAt,
+            notes: mr.notes,
         };
     }
 
