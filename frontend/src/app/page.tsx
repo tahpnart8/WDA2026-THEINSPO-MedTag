@@ -2,17 +2,26 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HeartPulse, Settings } from 'lucide-react';
+import SearchLoading from '@/components/emergency/SearchLoading';
 
 export default function LandingPage() {
   const [shortId, setShortId] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (shortId.length === 6) {
-      router.push(`/e/${shortId.toUpperCase()}`);
+      setIsSearching(true);
+      setTimeout(() => {
+        router.push(`/e/${shortId.toUpperCase()}`);
+      }, 1500);
     }
   };
+
+  if (isSearching) {
+    return <SearchLoading />;
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex flex-col items-center justify-center p-6 relative overflow-hidden transition-all duration-500">
@@ -27,12 +36,12 @@ export default function LandingPage() {
           <span className="text-yellow-400">Med</span>
           <span className="text-blue-600">Tag</span>
         </h1>
-        <p className="text-gray-500 font-medium text-lg leading-snug mb-8">Hệ thống nhận diện y tế<br />& cấp cứu mã nguồn mở</p>
+        <p className="text-gray-500 font-medium text-lg leading-snug mb-8">Hệ thống thông tin y tế<br />& cấp cứu mã nguồn mở</p>
 
         <form onSubmit={handleSearch} className="flex flex-col gap-4">
           <input
             type="text"
-            placeholder="Mã hồ sơ (VD: X7K9A2)"
+            placeholder="Mã hồ sơ (VD: TDP183)"
             value={shortId}
             onChange={(e) => setShortId(e.target.value)}
             maxLength={6}
@@ -50,7 +59,7 @@ export default function LandingPage() {
 
       <div className="absolute bottom-8 text-center w-full z-10 flex flex-col items-center">
         <a href="/portal/login" className="text-sm font-semibold text-gray-500 hover:text-blue-700 transition-colors bg-white/70 backdrop-blur-md px-5 py-2.5 rounded-full border border-gray-200 shadow-sm active:bg-gray-100 flex items-center gap-2">
-          <Settings size={16} /> Đăng nhập Quản trị viên
+          <Settings size={16} /> Đăng nhập quản lý hồ sơ
         </a>
       </div>
     </main>

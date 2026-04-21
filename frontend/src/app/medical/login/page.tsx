@@ -111,6 +111,10 @@ export default function DoctorLoginPage() {
                     </Suspense>
 
                     <div className="mt-8 pt-6 border-t border-slate-50 text-center text-xs text-slate-400 font-bold">
+                        Tài khoản thử nghiệm: bacsi@medtag.vn / 123456
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-slate-50 text-center text-xs text-slate-400 font-bold">
                         Tích hợp Cổng SSO Bộ Y Tế & VNeID sẽ ra mắt trong V2.
                     </div>
                 </div>
