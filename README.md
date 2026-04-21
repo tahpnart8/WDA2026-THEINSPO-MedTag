@@ -1,5 +1,7 @@
 # 🏥 MedTag - Hệ thống Thông tin Y tế & Cấp cứu Mã nguồn mở
 
+Demo link: https://medtag-by-theinspo.vercel.app/
+
 **MedTag** là nền tảng quản lý hồ sơ y tế khẩn cấp, giúp người sơ cứu (Bystander) và Bác sĩ/Nhân viên y tế truy cập nhanh chóng các thông tin sinh tử của bệnh nhân (nhóm máu, dị ứng, bệnh lý) thông qua mã QR hoặc Short ID, nhắm đến mục tiêu tối ưu "thời gian vàng" trong cấp cứu y tế.
 
 Đồng thời, hệ thống đề cao tuyệt đối **quyền riêng tư** thông qua cơ chế mã hóa AES-256 đối với dữ liệu y tế nhạy cảm định danh và hàng rào bảo mật Anti-Spam Gate nhằm chặn đứng các hành vi dùng bot quét dữ liệu tự động trái phép.
